@@ -4,7 +4,7 @@ using System.Collections;
 using System.Xml;
 using System.IO;
 using System.Reflection;
-using Mono.CSharp.Debugger;
+using Mono.CompilerServices.SymbolWriter;
 
 public class SymbolDumper {
 

@@ -5,8 +5,7 @@ using System.Xml;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-
-using Mono.CSharp.Debugger;
+using Mono.CompilerServices.SymbolWriter;
 
 namespace MonoCov {
 

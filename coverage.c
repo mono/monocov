@@ -9,6 +9,9 @@
 #include "mono/metadata/debug-helpers.h"
 #include "mono/metadata/profiler.h"
 
+#include "mono/metadata/metadata-internals.h"
+#include "mono/metadata/class-internals.h"
+
 struct _MonoProfiler {
 	/* Contains the methods for which we have coverage data */
 	GHashTable *methods;

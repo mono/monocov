@@ -1,7 +1,7 @@
 
 using System;
 using System.Collections;
-using Mono.CSharp.Debugger;
+using Mono.CompilerServices.SymbolWriter;
 
 namespace MonoCov {
 

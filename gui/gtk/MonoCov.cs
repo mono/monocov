@@ -9,6 +9,7 @@
 //  - Why can't I inherit from Widget as in Qt ???
 //
 
+using GLib;
 using Gtk;
 using Gnome;
 using Glade;
