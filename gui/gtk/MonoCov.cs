@@ -26,107 +26,156 @@ using Gtk;
 using Gnome;
 using Glade;
 using GtkSharp;
-
 using System;
+using System.Reflection;
 using System.IO;
 using System.Drawing;
+using Mono.GetOptions;
+
+[assembly: AssemblyTitle("monocov")]
+[assembly: AssemblyDescription("A Coverage Analysis program for .NET")]
+[assembly: AssemblyCopyright("Copyright (C) 2003 Zoltan Varga")]
+[assembly: Mono.Author("Zoltan Varga (vargaz@freemail.hu)")]
+[assembly: AssemblyVersion("0.1")]
+[assembly: Mono.UsageComplement("[<datafile>]")]
+[assembly: Mono.About("")]
 
 namespace MonoCov.Gui.Gtk {
 
+public class MonoCovOptions : Options
+{
+	[Option("Export coverage data as XML into directory PARAM", "export-xml")]
+	public string exportXmlDir;
+
+	[Option("Export coverage data as HTML into directory PARAM", "export-html")]
+	public string exportHtmlDir;
+
+	[Option("Use the XSL stylesheet PARAM for XML->HTML conversion", "stylesheet")]
+	public string styleSheet;
+
+	[Option("No progress messages during the export process", "no-progress")]
+	public bool quiet = false;
+
+	public override WhatToDoNext DoAbout ()
+	{
+		base.DoAbout ();
+		return WhatToDoNext.AbandonProgram;
+	}
+}
+
 public class MonoCov {
 
-	private static string CAPTION = "MonoCov 0.1";
-
+	private static string CAPTION = "MonoCov " + Assembly.GetExecutingAssembly ().GetName ().Version.ToString ();
 	private FileSelection openDialog;
-
 	private CoverageView coverageView;
 
 	Glade.XML xml;
 
-	Window main;
+	[Glade.Widget] Window main;
+	[Glade.Widget] ScrolledWindow scrolledwindow1;
+	
+	public static int Main (String[] args)
+	{
+		MonoCovOptions options = new MonoCovOptions ();
+		options.ProcessArgs (args);
+		args = options.RemainingArguments;
 
-	public MonoCov () {
-		xml = new Glade.XML (typeof (MonoCov).Assembly, "monocov.glade",
-							 null, null);
+		if (options.exportXmlDir != null)
+			return HandleExportXml (options, args);
 
-		main = (Window)xml ["main"];
-		main.Title = CAPTION;
-
-		xml.Autoconnect (this);
-	}
-
-	public static int Main (String[] args) {
-
+		if (options.exportHtmlDir != null)
+			return HandleExportHtml (options, args);
+		
 		Application.Init ();
 
 		MonoCov main = new MonoCov ();
 
 		if (args.Length > 0)
 			main.OpenFile (args[0]);
- 
+
+		if (args.Length > 1)
+			main.ExportAsXml (args [1]);
+
 		Application.Run ();
 
 		return 0;
 	}
 
-	public void OnQuit (object o, EventArgs args) {
+	public MonoCov ()
+	{
+		xml = new Glade.XML (typeof (MonoCov).Assembly, "monocov.glade", null, null);
+		xml.Autoconnect (this);
+
+		main.Title = CAPTION;
+	}
+
+	public void OnQuit (object o, EventArgs args)
+	{
 		Application.Quit ();
 	}
 
-	public void OnAbout (object o, EventArgs args) {
-		MessageDialog dialog = 
-			new MessageDialog (main, DialogFlags.Modal, MessageType.Info,
-							   ButtonsType.Ok,
-							   "A Coverage Analysis program for MONO.\n" +
-							   "By Zoltan Varga (vargaz@freemail.hu)\n" +
-							   "Powered by\n" +
-							   "MONO (http://www.go-mono.com)\n" + 
-							   "and Gtk# (http://gtk-sharp.sourceforge.net)");
+	public void OnAbout (object o, EventArgs args)
+	{
+		MessageDialog dialog;
+
+		dialog = new MessageDialog (main, DialogFlags.Modal, MessageType.Info,
+					    ButtonsType.Ok,
+					    "A Coverage Analysis program for MONO.\n" +
+					    "By Zoltan Varga (vargaz@freemail.hu)\n" +
+					    "Powered by\n" +
+					    "MONO (http://www.go-mono.com)\n" + 
+					    "and Gtk# (http://gtk-sharp.sourceforge.net)");
 		dialog.Run ();
 		dialog.Destroy ();
 	}
 
-	private void OpenFile (string fileName) {
+	private void OpenFile (string fileName)
+	{
 		//		if (coverageView != null)
 		//			coverageView.Close (true);
 
 		coverageView = new CoverageView (fileName);
 
-		// TODO: How to tell Qt to set a good size automatically ???
-		//		coverageView.SetMinimumSize (coverageView.SizeHint ());
-		//		this.SetCentralWidget (coverageView);
-
 		main.Title = (CAPTION + " - " + new FileInfo (fileName).Name);
 
-		//		Console.WriteLine ("A: " + (Container)xml ["bonobodock1"]);
-		((Container)xml ["scrolledwindow1"]).Add (coverageView.Widget);
+		scrolledwindow1.Add (coverageView.Widget);
 
 		main.ShowAll ();
 	}
 
-    public void delete_cb (object o, DeleteEventArgs args) {
+	private void ExportAsXml (string destDir)
+	{
+		coverageView.ExportAsXml (destDir);
+	}
+	
+	public void delete_cb (object o, DeleteEventArgs args)
+	{
 		SignalArgs sa = (SignalArgs) args;
 		Application.Quit ();
 		sa.RetVal = true;
 	}
 
-	public void file_sel_delete_event (object o, DeleteEventArgs args) {
+	public void file_sel_delete_event (object o, DeleteEventArgs args)
+	{
 		if (openDialog != null)
 			openDialog.Destroy ();
 	}
 
-	public void file_sel_ok_event (object o, EventArgs args) {
+	public void file_sel_ok_event (object o, EventArgs args)
+	{
 		string fileName = openDialog.Filename;
 		openDialog.Destroy ();
 		OpenFile (fileName);
 	}
 
-	public void file_sel_cancel_event (object o, EventArgs args) {
+	public void file_sel_cancel_event (object o, EventArgs args)
+	{
 		openDialog.Destroy ();
 		openDialog = null;
 	}
 
-	public void OnOpen (object o, EventArgs args) {
+	public void OnOpen (object o, EventArgs args)
+	{
 		FileSelection dialog = 
 			new FileSelection ("Choose a file");
 
@@ -146,6 +195,50 @@ public class MonoCov {
 
 		dialog.Modal = true;
 		dialog.ShowAll ();
+	}
+
+	static int HandleExportXml (MonoCovOptions opts, string[] args)
+	{
+		if (args.Length == 0) {
+			Console.WriteLine ("Error: Datafile name is required when using --export-xml");
+			return 1;
+		}
+
+		if (!Directory.Exists (opts.exportXmlDir)) {
+			try {
+				Directory.CreateDirectory (opts.exportXmlDir);
+			}
+			catch (Exception ex) {
+				Console.WriteLine ("Error: Destination directory '" + opts.exportXmlDir + "' does not exist and could not be created: " + ex);
+				return 1;
+			}
+		}
+		
+		CoverageModel model = new CoverageModel ();
+		model.ReadFromFile (args [0]);
+		XmlExporter exporter = new XmlExporter ();
+		exporter.DestinationDir = opts.exportXmlDir;
+		exporter.StyleSheet = opts.styleSheet;
+		if (!opts.quiet)
+			exporter.Progress += new XmlExporter.ProgressEventHandler (progressListener);
+		exporter.Export (model);
+		if (!opts.quiet) {
+			Console.WriteLine ();
+			Console.WriteLine ("Done.");
+		}
+		return 0;
+	}
+
+	static void progressListener (object sender, XmlExporter.ProgressEventArgs e)
+	{
+		Console.Write ("\rExporting Data: " + (e.pos * 100 / e.itemCount) + "%");
+	}
+
+	static int HandleExportHtml (MonoCovOptions opts, string[] args)
+	{
+		Console.WriteLine ("Not yet.");
+		Console.WriteLine ("Use --export-xml and view the generated files with an XSL aware browser like mozilla.");
+		return 1;
 	}
 }
 }

@@ -15,19 +15,13 @@ namespace MonoCov.Gui.Gtk {
 public class CoverageView {
 
 	public class TreeItem {
-
 		public string title;
-
 		public TreeStore store;
-
 		public TreeItem parent;
-
 		public TreeIter iter;
-
 		public CoverageItem model;
 
-		public TreeItem (TreeStore store, TreeItem parent, CoverageItem model,
-						 string title) {
+		public TreeItem (TreeStore store, TreeItem parent, CoverageItem model, string title) {
 			this.store = store;
 			this.parent = parent;
 			this.model = model;
@@ -64,22 +58,44 @@ public class CoverageView {
 				= String.Format ("{0:###0}", coverage * 100);
 
 			store.SetValue (iter, 3, coveragePercent + "%");
+
+			store.SetValue (iter, 4, this);
 		}
 	}
 
+	public class MethodItem : TreeItem {
+		public MethodItem (TreeStore store, TreeItem parent, CoverageItem model, string title)
+			: base (store, parent, model, title)
+		{
+		}
+	}
+
+	public class ClassItem : TreeItem {
+		public ClassItem (TreeStore store, TreeItem parent, CoverageItem model, string title)
+			: base (store, parent, model, title)
+		{
+		}
+	}
+
+	public class NamespaceItem : TreeItem {
+		public NamespaceItem (TreeStore store, TreeItem parent, CoverageItem model, string title)
+			: base (store, parent, model, title)
+		{
+		}
+	}
+	
 	public static string[] DEFAULT_FILTERS = {
 		"-PrivateImplementationDetails"
 	};
 
-	private TreeView tree;
-	private Hashtable namespaces;
-	private Hashtable classes;
-
-	public CoverageView (string fileName) {
-		TreeStore store = new TreeStore (typeof (string), typeof (string),
-										 typeof (string), typeof (string));
-
-
+	TreeView tree;
+	Hashtable namespaces;
+	Hashtable classes;
+	CoverageModel model;
+	
+	public CoverageView (string fileName)
+	{
+		TreeStore store = new TreeStore (typeof (string), typeof (string), typeof (string), typeof (string), typeof (object));
 		tree = new TreeView (store);
 
 		CellRendererText renderer = new CellRendererText ();
@@ -101,7 +117,7 @@ public class CoverageView {
 
 		tree.HeadersVisible = true;
 
-		CoverageModel model = new CoverageModel ();
+		model = new CoverageModel ();
 		foreach (string filter in DEFAULT_FILTERS) {
 			model.AddFilter (filter);
 		}
@@ -129,7 +145,7 @@ public class CoverageView {
 			if (nsItem.model.filtered)
 				continue;
 
-			TreeItem classItem = new TreeItem (store, nsItem, klass, klass.name);
+			TreeItem classItem = new ClassItem (store, nsItem, klass, klass.name);
 			//			classItem.SetPixmap (0, classPixmap);
 
 			// We should create the method nodes only when the class item
@@ -143,7 +159,7 @@ public class CoverageView {
 				if (title.Length > 64)
 					title = title.Substring (0, 63) + "...)";
 
-				TreeItem methodItem = new TreeItem (store, classItem, method, title);
+				new MethodItem (store, classItem, method, title);
 			}
 		}
 
@@ -152,29 +168,40 @@ public class CoverageView {
 		foreach (string ns in namespaces.Keys)
 			tree.ExpandRow (store.GetPath (((TreeItem)namespaces [ns]).Iter), false);
 
-		tree.ButtonPressEvent += new ButtonPressEventHandler (OnDoubleClick);
+		tree.ButtonPressEvent += new ButtonPressEventHandler (OnButtonPress);
 		tree.Selection.Mode = SelectionMode.Single;
 
 		// LAME: Why doesn't widgets visible by default ???
 		tree.Show ();
 	}
 
-	private void OnDoubleClick (object o, ButtonPressEventArgs args) {
-		if (args.Event.type == Gdk.EventType.TwoButtonPress) {
-			// LAME: This should be the default... :(
-			TreeModel model;
-			TreeIter iter = new TreeIter ();
-			if (tree.Selection.GetSelected (out model, ref iter))
-				if (tree.RowExpand (model.GetPath (iter))) {
-					// LAME: This seems to collapse the entire tree...
-					tree.CollapseRow (model.GetPath (iter));
-				}
-				else {
-					tree.ExpandRow (model.GetPath (iter), false);
-				}
-		}
+	void OnButtonPress (object o, ButtonPressEventArgs args)
+	{
+		if (args.Event.type == Gdk.EventType.TwoButtonPress) 
+			OnDoubleClick ();
 	}
 
+	void OnDoubleClick ()
+	{
+		TreeModel model;
+		TreeIter iter = new TreeIter ();
+		
+		if (!tree.Selection.GetSelected (out model, ref iter))
+			return;
+
+		GLib.Value value;
+		model.GetValue (iter, 4, out value);
+		object a = value.Val;
+
+		Console.WriteLine ("Type is: " + a.GetType ().ToString ());
+		if (tree.RowExpand (model.GetPath (iter))) {
+			// LAME: This seems to collapse the entire tree...
+			tree.CollapseRow (model.GetPath (iter));
+		} else {
+			tree.ExpandRow (model.GetPath (iter), false);
+		}
+	}
+	
 	/*
 	public void SlotDoubleClick (QListViewItem item) {
 		if (item is MethodItem) {
@@ -202,7 +229,7 @@ public class CoverageView {
 		}
 	}
 
-	private void FillCoverageColumns (TreeItem item, int hit, int missed) {
+	void FillCoverageColumns (TreeItem item, int hit, int missed) {
 		double coverage;
 
 		if (hit + missed == 0)
@@ -217,6 +244,14 @@ public class CoverageView {
 			= String.Format ("{0:##0}%", coverage * 100);
 
 		item.store.SetValue (item.iter, 3, coveragePercent);
+	}
+
+	public void ExportAsXml (string destDir)
+	{
+		XmlExporter exporter = new XmlExporter ();
+		exporter.DestinationDir = destDir;
+		exporter.Export (model);
+		Environment.Exit (1);
 	}
 
 }
