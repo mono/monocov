@@ -1,0 +1,208 @@
+diff -ru /home/zovarga/orig-qtsharp/src/bindings/static/QObject.cs ./src/bindings/static/QObject.cs
+--- /home/zovarga/orig-qtsharp/src/bindings/static/QObject.cs	2002-12-29 04:57:46.000000000 +0100
++++ ./src/bindings/static/QObject.cs	2003-06-06 22:18:47.000000000 +0200
+@@ -34,6 +34,7 @@
+     using System;
+ 	using System.Collections;
+     using System.Runtime.InteropServices;
++	using System.Reflection;
+ 
+ 	//[DeclareQtSignal ("ChildDestroyed(QObject)")]
+     public class QObject : QtSupport, IDisposable {
+@@ -177,7 +178,8 @@
+ 			string QtType = this.ClassName();
+ 			Type newType = Type.GetType( "Qt." + QtType );
+ 			object[] paramArray = { this.RawObject };
+-			return (QObject) Activator.CreateInstance( newType, paramArray );
++			QtSupport.UnregisterObject (this);
++			return (QObject) Activator.CreateInstance( newType, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, paramArray, null );
+ 		}
+ 
+ 		public static bool Connect(QObject sender, string signal, QObject receiver, string slot)
+diff -ru /home/zovarga/orig-qtsharp/src/bindings/static/QString.cs ./src/bindings/static/QString.cs
+--- /home/zovarga/orig-qtsharp/src/bindings/static/QString.cs	2003-02-09 09:46:28.000000000 +0100
++++ ./src/bindings/static/QString.cs	2003-06-05 23:12:20.000000000 +0200
+@@ -82,7 +82,6 @@
+ 		public QString (QChar unicode, uint length) : this (QNull.Instance)
+ 		{
+ 			rawObject = qt_new_QString4 (unicode.RawObject, length);
+-			
+ 		}
+ 	
+ 		[DllImport("libqtc")]
+@@ -101,17 +100,17 @@
+ 		internal QString (IntPtr ptr) : this (QNull.Instance)
+ 		{
+ 			rawObject = ptr;
+-
+ 		}
+ 
+-		internal QString (QNull dummy) : base (QNull.Instance) {}
+-		
++		internal QString (QNull dummy) : base (QNull.Instance) {
++		}
+ 		
+ 		[DllImport("libqtc")]
+ 		private static extern void qt_del_QString (IntPtr str);
+ 		~QString ()
+ 		{
+-			qt_del_QString (rawObject);
++			if (this != Null)
++				qt_del_QString (rawObject);
+ 		}
+ 
+ 		
+@@ -870,14 +869,14 @@
+ 		}
+ 
+ 		[DllImport("libqtc", CharSet=CharSet.Ansi)]
+-		private static extern IntPtr qt_QString_fromUtf8 (QString arg1, int len);
++		private static extern IntPtr qt_QString_fromUtf8 (string arg1, int len);
+ 		public static QString FromUtf8 (string arg1, int len)
+ 		{
+ 			return new QString (qt_QString_fromUtf8 (arg1, len));
+ 		}
+ 
+ 		[DllImport("libqtc", CharSet=CharSet.Ansi)]
+-		private static extern IntPtr qt_QString_fromLocal8Bit (QString arg1, int len);
++		private static extern IntPtr qt_QString_fromLocal8Bit (string arg1, int len);
+ 		public static QString FromLocal8Bit (string arg1, int len)
+ 		{
+ 			return new QString (qt_QString_fromLocal8Bit (arg1, len));
+diff -ru /home/zovarga/orig-qtsharp/src/bindings/static/QtSignal.cs ./src/bindings/static/QtSignal.cs
+--- /home/zovarga/orig-qtsharp/src/bindings/static/QtSignal.cs	2003-01-17 06:50:56.000000000 +0100
++++ ./src/bindings/static/QtSignal.cs	2003-06-05 16:58:55.000000000 +0200
+@@ -235,6 +235,11 @@
+ 						del = Delegate.CreateDelegate (typeof (del_QListViewItemQListViewItemQListViewItem), slotobj, "SlotBridge_QListViewItemQListViewItemQListViewItem");
+ 						slotobj.WrapperPtr = csharp_connect_QListViewItemQListViewItemQListViewItem (sender.RawObject, SIGNAL (realsignal), receiver.RawObject, del);
+ 						break;
++					case "(QListViewItem, QPoint, Int32)":
++						realsignal = sigobj.Name + "(QListViewItem*,const QPoint&,int)";
++						del = Delegate.CreateDelegate (typeof (del_QListViewItemQPointInt), slotobj, "SlotBridge_QListViewItemQPointInt");
++						slotobj.WrapperPtr = csharp_connect_QListViewItemQPointInt (sender.RawObject, SIGNAL (realsignal), receiver.RawObject, del);
++						break;
+ 					case "(QNetworkOperation)":
+ 						realsignal = sigobj.Name + "(QNetworkOperation*)";
+ 						del = Delegate.CreateDelegate (typeof (del_QNetworkOperation), slotobj, "SlotBridge_QNetworkOperation");
+@@ -791,6 +796,9 @@
+ 		
+ 		[DllImport("libqtsharp", CharSet=CharSet.Ansi)]
+ 		private static extern IntPtr csharp_connect_QListViewItemQListViewItemQListViewItem (IntPtr sender, string signal, IntPtr receiver, Delegate cb);
++
++		[DllImport("libqtsharp", CharSet=CharSet.Ansi)]
++		private static extern IntPtr csharp_connect_QListViewItemQPointInt (IntPtr sender, string signal, IntPtr receiver, Delegate cb);
+ 		
+ 		[DllImport("libqtsharp", CharSet=CharSet.Ansi)]
+ 		private static extern IntPtr csharp_connect_QNetworkOperation (IntPtr sender, string signal, IntPtr receiver, Delegate cb);
+@@ -835,6 +843,7 @@
+ 		public delegate void del_QListViewItem (IntPtr value0);
+ 		public delegate void del_QListViewItemQListViewItem (IntPtr value0, IntPtr value1);
+ 		public delegate void del_QListViewItemQListViewItemQListViewItem (IntPtr value0, IntPtr value1, IntPtr value2);
++		public delegate void del_QListViewItemQPointInt (IntPtr value0, IntPtr value1, int value2);
+ 		public delegate void del_QNetworkOperation (IntPtr value0);
+ 		public delegate void del_QObject (IntPtr value0);
+ 		public delegate void del_QToolBar (IntPtr value0);
+diff -ru /home/zovarga/orig-qtsharp/src/bindings/static/QtSlot.cs ./src/bindings/static/QtSlot.cs
+--- /home/zovarga/orig-qtsharp/src/bindings/static/QtSlot.cs	2003-01-17 06:50:56.000000000 +0100
++++ ./src/bindings/static/QtSlot.cs	2003-06-05 16:44:31.000000000 +0200
+@@ -159,6 +159,14 @@
+ 
+ 			Invoke (new object[] {csvalue0, csvalue1, csvalue2});
+ 		}
++
++		public void SlotBridge_QListViewItemQPointInt (IntPtr value0, IntPtr value1, int value2)
++		{
++			QListViewItem csvalue0 = QtSupport.LookupObject (value0, typeof (QListViewItem)) as QListViewItem;
++			QPoint csvalue1 = QtSupport.LookupObject (value1, typeof (QPoint)) as QPoint;
++
++			Invoke (new object[] {csvalue0, csvalue1, value2});
++		}
+ 		
+ 		public void SlotBridge_QNetworkOperation (IntPtr value0)
+ 		{
+diff -ru /home/zovarga/orig-qtsharp/src/libqtsharp/customslot.cpp ./src/libqtsharp/customslot.cpp
+--- /home/zovarga/orig-qtsharp/src/libqtsharp/customslot.cpp	2003-01-17 07:13:01.000000000 +0100
++++ ./src/libqtsharp/customslot.cpp	2003-06-05 17:07:03.000000000 +0200
+@@ -75,6 +75,11 @@
+ 	p14 = ptr;
+ }
+ 
++CustomSlot::CustomSlot (void (*ptr)(QListViewItem*,const QPoint&,int), QObject *parent, const char *name): QObject (parent, name)
++{
++	p14_2 = ptr;
++}
++
+ CustomSlot::CustomSlot (void (*ptr)(QNetworkOperation*), QObject *parent, const char *name): QObject (parent, name)
+ {
+ 	p15 = ptr;
+@@ -200,6 +205,11 @@
+ 	p14 (value0, value1, value2);
+ }
+ 
++void CustomSlot::callback (QListViewItem* value0, const QPoint& value1, int value2)
++{
++	p14_2 (value0, value1, value2);
++}
++
+ void CustomSlot::callback (QNetworkOperation* value0)
+ {
+ 	p15 (value0);
+diff -ru /home/zovarga/orig-qtsharp/src/libqtsharp/customslot.h ./src/libqtsharp/customslot.h
+--- /home/zovarga/orig-qtsharp/src/libqtsharp/customslot.h	2003-01-17 07:13:01.000000000 +0100
++++ ./src/libqtsharp/customslot.h	2003-06-05 17:07:56.000000000 +0200
+@@ -52,6 +52,7 @@
+ 	CustomSlot (void (*ptr)(QListViewItem*), QObject *parent, const char *name=0);
+ 	CustomSlot (void (*ptr)(QListViewItem*,QListViewItem*), QObject *parent, const char *name=0);
+ 	CustomSlot (void (*ptr)(QListViewItem*,QListViewItem*,QListViewItem*), QObject *parent, const char *name=0);
++	CustomSlot (void (*ptr)(QListViewItem*,const QPoint&,int), QObject *parent, const char *name=0);
+ 	CustomSlot (void (*ptr)(QNetworkOperation*), QObject *parent, const char *name=0);
+ 	CustomSlot (void (*ptr)(QObject*), QObject *parent, const char *name=0);
+ 	CustomSlot (void (*ptr)(QToolBar*), QObject *parent, const char *name=0);
+@@ -79,6 +80,7 @@
+ 	void callback (QListViewItem*);
+ 	void callback (QListViewItem*,QListViewItem*);
+ 	void callback (QListViewItem*,QListViewItem*,QListViewItem*);
++	void callback (QListViewItem* value0, const QPoint& value1, int value2);
+ 	void callback (QNetworkOperation*);
+ 	void callback (QObject*);
+ 	void callback (QToolBar*);
+@@ -105,6 +107,7 @@
+ 	void (*p12)(QListViewItem*);
+ 	void (*p13)(QListViewItem*,QListViewItem*);
+ 	void (*p14)(QListViewItem*,QListViewItem*,QListViewItem*);
++	void (*p14_2)(QListViewItem*,const QPoint&,int);
+ 	void (*p15)(QNetworkOperation*);
+ 	void (*p16)(QObject*);
+ 	void (*p17)(QToolBar*);
+diff -ru /home/zovarga/orig-qtsharp/src/libqtsharp/qtsharp.cpp ./src/libqtsharp/qtsharp.cpp
+--- /home/zovarga/orig-qtsharp/src/libqtsharp/qtsharp.cpp	2003-01-17 07:13:01.000000000 +0100
++++ ./src/libqtsharp/qtsharp.cpp	2003-06-05 17:07:22.000000000 +0200
+@@ -199,6 +199,16 @@
+ 	return (QObject *)cs;
+ }
+ 
++QObject *csharp_connect_QListViewItemQPointInt (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QListViewItem*,const QPoint&,int))
++{
++	CustomSlot *cs = new CustomSlot (ptr, receiver);
++	if (! QObject::connect (sender, signal, cs, SLOT (callback (QListViewItem*,const QPoint&,int)))) {
++		delete cs;
++		cs = 0L;
++	}
++	return (QObject *)cs;
++}
++
+ QObject *csharp_connect_QNetworkOperation (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QNetworkOperation*))
+ {
+ 	CustomSlot *cs = new CustomSlot (ptr, receiver);
+diff -ru /home/zovarga/orig-qtsharp/src/libqtsharp/qtsharp.h ./src/libqtsharp/qtsharp.h
+--- /home/zovarga/orig-qtsharp/src/libqtsharp/qtsharp.h	2003-01-17 07:13:01.000000000 +0100
++++ ./src/libqtsharp/qtsharp.h	2003-06-05 17:08:34.000000000 +0200
+@@ -44,6 +44,8 @@
+ 
+ QObject *csharp_connect_QListViewItemQListViewItemQListViewItem (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QListViewItem*,QListViewItem*,QListViewItem*));
+ 
++QObject *csharp_connect_QListViewItemQPointInt (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QListViewItem*,const QPoint&,int));
++
+ QObject *csharp_connect_QNetworkOperation (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QNetworkOperation*));
+ 
+ QObject *csharp_connect_QObject (QObject *sender, const char *signal, QObject *receiver, void (*ptr)(QObject*));
