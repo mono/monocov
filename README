@@ -94,7 +94,6 @@ There are two utility programs included with MonoCov:
 
 - Add ability to run the program from inside the analyzer
 - Add filters (globals/per program)
-- Add HTML export option
 - Handle nested classes more intelligently
 
 5. LICENSE
@@ -105,7 +104,9 @@ zlib/libpng.
 6. CONTACT
 ----------
 
-Zoltan Varga (vargaz@freemail.hu)
+Zoltan Varga (vargaz@freemail.hu) 
+or 
+the mono devel list (mono-devel-list@ximian.com)
 
 RANDOM NOTES:
 -------------

@@ -1,5 +1,10 @@
 2003-07-02  Zoltan Varga  <vargaz@freemail.hu>
 
+	* Makefile: Updated to work in the mono CVS directory structure.
+
+	* MonoCovMain.cs gui/gtk/MonoCov.cs gui/qt/MonoCov.cs: Moved all
+	non-gui command line processing into a separate class.
+
 	* all: Initial import into CVS.
 
 2003-07-01  Zoltan Varga  <vargaz@freemail.hu>

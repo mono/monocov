@@ -1,7 +1,7 @@
 
 PROJECTNAME = monocov
 GUI = qt
-MONO_ROOT = $(HOME)/mono-cvs/mono
+MONO_ROOT = ../mono
 
 all: monocov.exe libmono-profiler-monocov.so symbols.exe nunit-console.exe
 
@@ -28,10 +28,19 @@ SRCS = \
 	SourceFileCoverageData.cs \
 	XmlExporter.cs \
 	HtmlExporter.cs \
+	MonoCovMain.cs \
 	$(GUI_SRCS)
 
-monocov.exe: $(SRCS) style.xsl
-	mcs -g /target:exe /out:$@ -r Mono.CSharp.Debugger -r Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
+monocov.exe: $(SRCS) style.xsl .gui-$(GUI)
+	mcs -g /target:exe /out:$@ -define:GUI_$(GUI) -r Mono.CSharp.Debugger -r Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
+
+.gui-gtk:
+	@rm -f .gui-*
+	@touch .gui-gtk
+
+.gui-qt:
+	@rm -f .gui-*
+	@touch .gui-qt
 
 symbols.exe: symbols.cs
 	mcs -g /target:exe /out:$@ -r Mono.CSharp.Debugger symbols.cs
@@ -44,10 +53,10 @@ libmono-profiler-monocov.so: coverage.c
 
 test:
 	mcs -g test.cs
-	./mono --profile=monocov:outfile=res.cov test.exe
+	mono --profile=monocov:outfile=res.cov test.exe
 
 cortests:
-	MONO_PATH=$(HOME)/mono-cvs/mcs/class/corlib/Test ./mono --profile=monocov:outfile=corlib-tests.cov,+[corlib] nunit-console.exe corlib_test.dll
+	MONO_PATH=../mcs/class/corlib/Test mono --profile=monocov:outfile=corlib-tests.cov,+[corlib] nunit-console.exe corlib_test.dll
 
 export-cortests:
 	./monocov.exe --export-xml=export corlib-tests.cov
@@ -57,7 +66,7 @@ html-cortests:
 	./monocov.exe --export-html=html-export corlib-tests.cov
 	tar cvzf html-tests.tar.gz html-export
 
-#	MONO_PATH=$(HOME)/mono-cvs/mcs/class/corlib/Test ./mono --profile=monocov:outfile=corlib-tests.cov,-MonoTests,-NUnit,-[System nunit-console.exe -x Security corlib_test.dll
+#	MONO_PATH=../mcs/class/corlib/Test ./mono --profile=monocov:outfile=corlib-tests.cov,-MonoTests,-NUnit,-[System nunit-console.exe -x Security corlib_test.dll
 
 hash-test:
 	./mono --profile=monocov:+Hashtable hash-table.exe

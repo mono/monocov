@@ -1,20 +1,4 @@
 
-//
-// TODO:
-// - the line number information generated for some methods is funky, like
-//   System.Text.Encoding::get_ASCII
-// - the line number information for System.CurrentTimeZone:GetDaylightChanges
-//   contains a 0->196 mapping !!!
-// - the line number information for life.cs does not contain anything for line
-//   38.
-// - when a method signature consists of multiple lines, the begin_line for
-//   the methods seems to be the last line of the signature, instead of the 
-//   first.
-// - the line number information does not contain columns, making it
-//   impossible to determine coverage for code like this:
-//     if (something) { something }
-// - why doesn't some line numbers do not appear in stack traces ????
-
 // QT# problems:
 // - open a second .cov file + exit -> crash in qt_del_QListViewItem
 // - open a second .cov file + click on class name -> strange things happen
@@ -39,43 +23,13 @@ using Mono.GetOptions;
 
 namespace MonoCov.Gui.Qt {
 
-public class MonoCovOptions : Options
-{
-	[Option("Export coverage data as XML into directory PARAM", "export-xml")]
-		public string exportXmlDir;
-
-	[Option("Export coverage data as HTML into directory PARAM", "export-html")]
-		public string exportHtmlDir;
-
-	[Option("Use the XSL stylesheet PARAM for XML->HTML conversion", "stylesheet")]
-		public string styleSheet;
-
-	[Option("No progress messages during the export process", "no-progress")]
-		public bool quiet = false;
-
-	public override WhatToDoNext DoAbout() {
-		base.DoAbout ();
-		return WhatToDoNext.AbandonProgram;
-	}
-}
-
 public class MonoCov : QMainWindow {
 
 	private static string CAPTION = "MonoCov " + Assembly.GetExecutingAssembly ().GetName ().Version.ToString ();
 
 	private CoverageView coverageView;
 
-	public static int Main (String[] args) {
-		MonoCovOptions options = new MonoCovOptions ();
-		options.ProcessArgs (args);
-		args = options.RemainingArguments;
-
-		if (options.exportXmlDir != null)
-			return handleExportXml (options, args);
-
-		if (options.exportHtmlDir != null)
-			return handleExportHtml (options, args);
-
+	public static int GuiMain (String[] args) {
 		QApplication app = new QApplication (args);
 
 		MonoCov main = new MonoCov ();
@@ -83,9 +37,6 @@ public class MonoCov : QMainWindow {
 
 		if (args.Length > 0)
 			main.openFile (args[0]);
-
-		if (args.Length > 1)
-			main.exportAsXml (args [1]);
 
 		main.Show ();
 
