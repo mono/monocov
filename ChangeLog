@@ -1,3 +1,8 @@
+2003-07-03  Zoltan Varga  <vargaz@freemail.hu>
+
+	* coverage.c (mono_profiler_startup): Fix startup if no arguments
+	are provided.
+
 2003-07-02  Zoltan Varga  <vargaz@freemail.hu>
 
 	* Makefile: Updated to work in the mono CVS directory structure.

@@ -50,7 +50,10 @@ mono_profiler_startup (char *arg)
 	gchar **args;
 
 	/* Why does the runtime passes the module name to us ? */
-	arg = strstr (arg, ":") + 1;
+	if (strstr (arg, ":"))
+		arg = strstr (arg, ":") + 1;
+	else
+		arg = NULL;
 	args = g_strsplit (arg ? arg : "", ",", -1);
 
 	MonoProfiler *prof = g_new0 (MonoProfiler, 1);
