@@ -1,3 +1,9 @@
+2005-03-29  Zoltan Varga  <vargaz@freemail.hu>
+
+	* symbols.cs: Update to latest Mono.CompilerServices.SymbolWriter.
+
+	* Makefile: Disable building of nunit-console.exe for now.
+
 2004-12-06  Zoltan Varga  <vargaz@freemail.hu>
 
 	* coverage.c *.cs Makefile: Applied patch from Mike Tindal (mtindal@paradoxpoint.com). Fix compilation problems on HEAD.

@@ -3,7 +3,7 @@ PROJECTNAME = monocov
 GUI = gtk
 MONO_ROOT = ../mono
 
-all: monocov.exe libmono-profiler-monocov.so symbols.exe nunit-console.exe
+all: monocov.exe libmono-profiler-monocov.so symbols.exe
 
 ifeq ($(GUI), gtk)
 GUI_SRCS = \
@@ -47,7 +47,7 @@ symbols.exe: symbols.cs
 	mcs -g /target:exe /out:$@ -r Mono.CompilerServices.SymbolWriter symbols.cs
 
 nunit-console.exe: nunit-console.cs
-	mcs -r nunit.framework -r Mono.GetOptions nunit-console.cs
+	mcs -r nunit.framework -r nunit.core -r nunit.util -r Mono.GetOptions nunit-console.cs
 
 libmono-profiler-monocov.so: coverage.c
 	$(CC) -g -I$(MONO_ROOT) `pkg-config --cflags glib-2.0` --shared -o $@ $^

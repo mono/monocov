@@ -16,7 +16,7 @@ public class SymbolDumper {
 		string assemblyName = args [0];
 		string methodNamePattern = args [1];
 
-		Assembly assembly = Assembly.LoadFrom (args [0]);
+		Assembly assembly = Assembly.LoadFrom (assemblyName);
 
 		Console.WriteLine ("Reading symbols for " + assembly + " ...");
 		MonoSymbolFile symbolFile = MonoSymbolFile.ReadSymbolFile (assembly);
@@ -31,8 +31,10 @@ public class SymbolDumper {
 
 			LineNumberEntry[] lines = entry.LineNumbers;
 
-			if (entry.Name.IndexOf (methodNamePattern) != -1) {
-				Console.WriteLine ("METHOD: " + entry.Name + "[" + entry.Token + "]");
+			MethodBase mi = MonoDebuggerSupport.GetMethod (assembly, entry.Token);
+
+			if (mi.Name.IndexOf (methodNamePattern) != -1) {
+				Console.WriteLine (mi.DeclaringType.FullName + ":" + mi.Name + " " + entry);
 
 				foreach (LineNumberEntry line in lines)
 					Console.WriteLine ("\t" + line);
