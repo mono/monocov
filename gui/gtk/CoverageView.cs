@@ -238,7 +238,7 @@ public class CoverageView {
 			return;
 
 		GLib.Value value = new GLib.Value ();
-		model.GetValue (iter, 4, value);
+		model.GetValue (iter, 4, ref value);
 		object item = value.Val;
 
 		if (item is MethodItem){
