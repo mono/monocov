@@ -57,9 +57,9 @@ test:
 	mono --profile=monocov:outfile=res.cov test.exe
 
 cortests:
-	MONO_PATH=../mcs/class/corlib/Test mono --profile=monocov:outfile=corlib-tests.cov,+[corlib] nunit-console.exe corlib_test.dll
+	MONO_PATH=../mcs/class/corlib mono --profile=monocov:outfile=corlib-tests.cov,+[mscorlib] nunit-console.exe corlib_test.dll
 
-export-cortests:
+xml-cortests:
 	./monocov.exe --export-xml=export corlib-tests.cov
 	tar cvzf corlib-tests.tar.gz export
 
@@ -67,16 +67,17 @@ html-cortests:
 	./monocov.exe --export-html=html-export corlib-tests.cov
 	tar cvzf html-tests.tar.gz html-export
 
-#	MONO_PATH=../mcs/class/corlib/Test ./mono --profile=monocov:outfile=corlib-tests.cov,-MonoTests,-NUnit,-[System nunit-console.exe -x Security corlib_test.dll
+emittests:
+	MONO_PATH=../mcs/class/corlib/Test mono --profile=monocov:outfile=emittests.cov,+[corlib]System.Reflection.Emit nunit-console.exe corlib_test.dll Reflection.Emit
 
 hash-test:
-	./mono --profile=monocov:+Hashtable hash-table.exe
+	mono --profile=monocov:+Hashtable hash-table.exe
 
 test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
 	mcs -g /out:$@ $^
 
 clean:
-	rm -f monocov.exe symbols.exe nunit-console.exe
+	rm -f monocov.exe symbols.exe nunit-console.exe libmono-profiler-monocov.so
 
 distrib:
 	tar -cvhzf $(PROJECTNAME).tar.gz `cat MANIFEST` && DIRNAME=$(PROJECTNAME)-`date +%d-%b-%y` && rm -rf $$DIRNAME && mkdir $$DIRNAME && mv $(PROJECTNAME).tar.gz $$DIRNAME && cd $$DIRNAME && tar -xzf $(PROJECTNAME).tar.gz && rm $(PROJECTNAME).tar.gz && cd - && tar -cvzf $$DIRNAME.tar.gz $$DIRNAME && rm -rf $$DIRNAME

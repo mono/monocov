@@ -11,6 +11,7 @@ CoverageModel.cs
 SourceFileCoverageData.cs
 XmlExporter.cs
 HtmlExporter.cs
+MonoCovMain.cs
 style.xsl
 trans.gif
 gui/qt/MonoCov.cs

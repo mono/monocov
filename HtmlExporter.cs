@@ -100,7 +100,8 @@ public class HtmlExporter {
 			try {
 				XsltArgumentList args = new XsltArgumentList ();
 				args.AddParam ("link-suffix", "", ".html");
-				transform.Transform (new XPathDocument (new StreamReader (e.fileName)), args, new StreamWriter (Path.Combine (DestinationDir, name.Replace (".xml", ".html"))));
+				transform.Transform (new XPathDocument (new StreamReader (e.fileName)), args, 
+					new StreamWriter (Path.Combine (DestinationDir, name.Replace (".xml", ".html"))), null);
 			}
 			catch (Exception ex) {
 				Console.WriteLine ("Error: Unable to transform '" + e.fileName + "': " + ex);

@@ -49,8 +49,6 @@ public class CoverageModel : CoverageItem {
 
 	private bool IsFiltered (string name) {
 
-		name = name.Replace ("mscorlib", "corlib");
-
 		// Check positive filters first
 		bool hasPositive = false;
 		bool found = false;
@@ -58,7 +56,7 @@ public class CoverageModel : CoverageItem {
 			if (pattern [0] == '+') {
 				string p = pattern.Substring (1);
 				if (name.IndexOf (p) != -1) {
-					// Console.WriteLine ("FILTERED: " + regex + " -> " + name);
+					//Console.WriteLine ("FILTERED: " + pattern + " -> " + name);
 					found = true;
 				}
 				hasPositive = true;
@@ -71,7 +69,7 @@ public class CoverageModel : CoverageItem {
 			if (pattern [0] == '-') {
 				string p = pattern.Substring (1);
 				if (name.IndexOf (p) != -1) {
-					// Console.WriteLine ("FILTERED: " + regex + " -> " + name);
+					//Console.WriteLine ("FILTERED: " + pattern + " -> " + name);
 					return true;
 				}
 			}
@@ -162,7 +160,10 @@ public class CoverageModel : CoverageItem {
 			ClassCoverageItem klass = ProcessClass (t);
 
 			MethodEntry entry = symbolFile.GetMethodByToken (Int32.Parse (token));
-			MethodBase monoMethod = assembly.MonoDebugger_GetMethod (Int32.Parse (token));
+
+			MethodBase monoMethod = (MethodBase) typeof (Assembly).InvokeMember ("MonoDebugger_GetMethod",
+				BindingFlags.Static | BindingFlags.InvokeMethod | BindingFlags.NonPublic,
+				null, assembly, new object [2] { assembly, Int32.Parse (token) }, null); 
 
 			ProcessMethod (monoMethod, entry, klass, methodName, cov_info);
 		}

@@ -4,7 +4,7 @@
 //  - the generated sources are hard to read because the API functions are
 //    mixed with internal functions, export directives etc.
 //  - the app is slow to start up, slower than Qt#. Afterwards, it is faster.
-//  - the open file dialog requires 30 lines in Gtk#, and 2 lines in Qt#
+//  - the open file dialog requires 6 lines in Gtk#, and 2 lines in Qt#
 //  - no way to set a file name filter in FileSelection(Dialog)
 //  - Why can't I inherit from Widget as in Qt ???
 //
@@ -21,7 +21,7 @@ using Mono.GetOptions;
 
 namespace MonoCov.Gui.Gtk {
 
-public class MonoCov {
+public class MonoCovGui {
 
 	private static string CAPTION = "MonoCov " + Assembly.GetExecutingAssembly ().GetName ().Version.ToString ();
 	private FileSelection openDialog;
@@ -29,14 +29,14 @@ public class MonoCov {
 
 	Glade.XML xml;
 
-	[Glade.Widget] Window main;
+	[Glade.Widget] Gtk.Window main;
 	[Glade.Widget] ScrolledWindow scrolledwindow1;
 	
 	public static int GuiMain (String[] args)
 	{
 		Application.Init ();
 
-		MonoCov main = new MonoCov ();
+		MonoCovGui main = new MonoCovGui ();
 
 		if (args.Length > 0)
 			main.OpenFile (args[0]);
@@ -46,9 +46,9 @@ public class MonoCov {
 		return 0;
 	}
 
-	public MonoCov ()
+	public MonoCovGui ()
 	{
-		xml = new Glade.XML (typeof (MonoCov).Assembly, "monocov.glade", null, null);
+		xml = new Glade.XML (typeof (MonoCovGui).Assembly, "monocov.glade", null, null);
 		xml.Autoconnect (this);
 
 		main.Title = CAPTION;
@@ -100,27 +100,9 @@ public class MonoCov {
 		sa.RetVal = true;
 	}
 
-	public void file_sel_delete_event (object o, DeleteEventArgs args)
-	{
-		if (openDialog != null)
-			openDialog.Destroy ();
-	}
-
-	public void file_sel_ok_event (object o, EventArgs args)
-	{
-		string fileName = openDialog.Filename;
-		openDialog.Destroy ();
-		OpenFile (fileName);
-	}
-
-	public void file_sel_cancel_event (object o, EventArgs args)
-	{
-		openDialog.Destroy ();
-		openDialog = null;
-	}
-
 	public void OnOpen (object o, EventArgs args)
 	{
+		string fileName = null;
 		FileSelection dialog = 
 			new FileSelection ("Choose a file");
 
@@ -128,18 +110,16 @@ public class MonoCov {
 
 		dialog.HideFileopButtons ();
 
-		dialog.Filename = "*.cs";
+		dialog.Filename = "*.cov";
 
-		dialog.DeleteEvent += new DeleteEventHandler (file_sel_delete_event);
+		if (dialog.Run () == (int) ResponseType.Ok) {
+			fileName = dialog.Filename;
+		}
+		dialog.Destroy ();
 
-		dialog.OkButton.Clicked +=new EventHandler (file_sel_ok_event);
-
-		dialog.CancelButton.Clicked +=new EventHandler (file_sel_cancel_event);
-
-		openDialog = dialog;
-
-		dialog.Modal = true;
-		dialog.ShowAll ();
+		if (fileName != null) {
+			OpenFile (fileName);
+		}
 	}
 }
 }

@@ -1,3 +1,7 @@
+2004-04-15  Zoltan Varga  <vargaz@freemail.hu>
+
+	*: Update to latest mono + gtk#.
+
 2003-10-17  Zoltan Varga  <vargaz@freemail.hu>
 
 	* nunit-console.cs: Update to latest nunit.

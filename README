@@ -154,6 +154,4 @@ TODO:
   so the tests will run faster.
 - avoid instrumentation for instruction without side effects (like ldc.i4)
 - why does the RSA tests take so much time -> because of entropy generation
-- check in cryptography patches
-- optimize reflection classes by caching the results of get_type_info etc.
-- put monocov into mono CVS.
+

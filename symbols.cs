@@ -31,8 +31,8 @@ public class SymbolDumper {
 
 			LineNumberEntry[] lines = entry.LineNumbers;
 
-			if (entry.FullName.IndexOf (methodNamePattern) != -1) {
-				Console.WriteLine ("METHOD: " + entry.FullName + "[" + entry.Token + "]");
+			if (entry.Name.IndexOf (methodNamePattern) != -1) {
+				Console.WriteLine ("METHOD: " + entry.Name + "[" + entry.Token + "]");
 
 				foreach (LineNumberEntry line in lines)
 					Console.WriteLine ("\t" + line);

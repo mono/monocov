@@ -1,4 +1,3 @@
-
 //
 // TODO:
 // - the line number information generated for some methods is funky, like
@@ -74,7 +73,11 @@ public class MonoCovMain {
 		if (options.exportHtmlDir != null)
 			return handleExportHtml (options, args);
 
-		return MonoCov.GuiMain (args);
+		#if GUI_qt
+		return MonoCov.Gui.Qt.MonoCov.GuiMain (args);
+		#else
+		return MonoCov.Gui.Gtk.MonoCovGui.GuiMain (args);
+		#endif
 	}
 
 	private static void progressListener (object sender, XmlExporter.ProgressEventArgs e) {

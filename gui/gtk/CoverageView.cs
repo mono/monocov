@@ -198,9 +198,10 @@ public class CoverageView {
 		tree.Show ();
 	}
 
+	[GLib.ConnectBefore]
 	void OnButtonPress (object o, ButtonPressEventArgs args)
 	{
-		if (args.Event.type == Gdk.EventType.TwoButtonPress) 
+		if (args.Event.Type == Gdk.EventType.TwoButtonPress) 
 			OnDoubleClick ();
 	}
 
@@ -214,7 +215,7 @@ public class CoverageView {
 			source_views [item.Model.sourceFile] = SourceView;
 			window_maps [SourceView] = item.Model.sourceFile;
 			SourceView.Show ();
-			SourceView.DeleteEvent += new GtkSharp.DeleteEventHandler (OnDeleteEvent);
+			SourceView.DeleteEvent += new Gtk.DeleteEventHandler (OnDeleteEvent);
 		}
 		return SourceView;
 
@@ -231,13 +232,13 @@ public class CoverageView {
 	void OnDoubleClick ()
 	{
 		TreeModel model;
-		TreeIter iter = new TreeIter ();
+		TreeIter iter;
 		
-		if (!tree.Selection.GetSelected (out model, ref iter))
+		if (!tree.Selection.GetSelected (out model, out iter))
 			return;
 
-		GLib.Value value;
-		model.GetValue (iter, 4, out value);
+		GLib.Value value = new GLib.Value ();
+		model.GetValue (iter, 4, value);
 		object item = value.Val;
 
 		if (item is MethodItem){
@@ -245,7 +246,7 @@ public class CoverageView {
                         SourceWindow sourceView = ShowSourceFor (method.ParentClass);
                         sourceView.CenterOnMethod (method);
 		} else {
-			if (tree.RowExpand (model.GetPath (iter))) {
+			if (tree.ExpandRow (model.GetPath (iter), true)) {
 				// LAME: This seems to collapse the entire tree...
 				tree.CollapseRow (model.GetPath (iter));
 			} else {
