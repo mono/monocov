@@ -113,7 +113,7 @@ public class CoverageView {
 	Hashtable namespaces;
 	Hashtable classes;
 	CoverageModel model;
-	Hashtable source_views;
+	Hashtable source_views, window_maps;
 	
 	public CoverageView (string fileName)
 	{
@@ -130,11 +130,11 @@ public class CoverageView {
 		tree.AppendColumn ("Coverage", renderer, "text", 3);
 
 		tree.GetColumn (0).Resizable = true;
-		tree.GetColumn (1).Alignment = 0.5f;
+		tree.GetColumn (1).Alignment = 0.0f;
 		tree.GetColumn (1).Resizable = true;
-		tree.GetColumn (2).Alignment = 0.5f;
+		tree.GetColumn (2).Alignment = 0.0f;
 		tree.GetColumn (2).Resizable = true;
-		tree.GetColumn (3).Alignment = 0.5f;
+		tree.GetColumn (3).Alignment = 0.0f;
 		tree.GetColumn (3).Resizable = true;
 
 		tree.HeadersVisible = true;
@@ -193,6 +193,7 @@ public class CoverageView {
 		tree.Selection.Mode = SelectionMode.Single;
 
 		source_views = new Hashtable ();
+		window_maps = new Hashtable ();
 		// LAME: Why doesn't widgets visible by default ???
 		tree.Show ();
 	}
@@ -205,25 +206,26 @@ public class CoverageView {
 
 	SourceWindow ShowSourceFor (ClassItem item)
 	{
-		if (item == null){
-			Console.WriteLine ("oops");
-		}
-		if (item.Model == null){
-			Console.WriteLine ("oops2");
-		}
-		if (item.Model.sourceFile == null){
-			Console.WriteLine ("oops3");
-		}
 		SourceWindow SourceView = (SourceWindow)source_views [item.Model.sourceFile];
 		if (SourceView != null) {
 			SourceView.Show ();
 		} else {
 			SourceView = new SourceWindow (item);
 			source_views [item.Model.sourceFile] = SourceView;
+			window_maps [SourceView] = item.Model.sourceFile;
 			SourceView.Show ();
+			SourceView.DeleteEvent += new GtkSharp.DeleteEventHandler (OnDeleteEvent);
 		}
 		return SourceView;
 
+	}
+
+	void OnDeleteEvent (object sender, DeleteEventArgs e)
+	{
+		if (window_maps [sender] != null){
+			source_views [window_maps [sender]] = null;
+			window_maps [sender] = null;
+		}
 	}
 	
 	void OnDoubleClick ()
