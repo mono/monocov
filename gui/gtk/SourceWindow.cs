@@ -17,17 +17,17 @@ namespace MonoCov.Gui.Gtk{
 
 			ScrolledWindow sw = new ScrolledWindow ();
 			
-			text_buffer = new TextBuffer (new Gtk.TextTagTable ());
+			text_buffer = new TextBuffer (new TextTagTable ());
 			text_view = new TextView (text_buffer);
 			text_view.Editable = false;
 
 			sw.Add (text_view);
 			Add (sw);
 
-			hit_color = new Gtk.TextTag ("hit");
+			hit_color = new TextTag ("hit");
 			hit_color.Foreground = "blue";
 			text_buffer.TagTable.Add (hit_color);
-			missed_color = new Gtk.TextTag ("miss");
+			missed_color = new TextTag ("miss");
 			missed_color.Foreground = "red";
 			text_buffer.TagTable.Add (missed_color);
 			LoadFile (klass);

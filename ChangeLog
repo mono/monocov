@@ -1,5 +1,8 @@
 2005-03-29  Zoltan Varga  <vargaz@freemail.hu>
 
+	* gui/gtk/*.cs: Applied patch from Rafael Teixeira <monoman@gmail.com>.
+	Fix compilation problems on HEAD.
+
 	* symbols.cs: Update to latest Mono.CompilerServices.SymbolWriter.
 
 	* Makefile: Disable building of nunit-console.exe for now.

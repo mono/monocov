@@ -11,7 +11,7 @@
 
 using GLib;
 using Gtk;
-using Gnome;
+//using Gnome;
 using Glade;
 using GtkSharp;
 using System;
@@ -30,7 +30,7 @@ public class MonoCovGui {
 
 	Glade.XML xml;
 
-	[Glade.Widget] Gtk.Window main;
+	[Glade.Widget] Window main;
 	[Glade.Widget] ScrolledWindow scrolledwindow1;
 	
 	public static int GuiMain (String[] args)

@@ -215,7 +215,7 @@ public class CoverageView {
 			source_views [item.Model.sourceFile] = SourceView;
 			window_maps [SourceView] = item.Model.sourceFile;
 			SourceView.Show ();
-			SourceView.DeleteEvent += new Gtk.DeleteEventHandler (OnDeleteEvent);
+			SourceView.DeleteEvent += new DeleteEventHandler (OnDeleteEvent);
 		}
 		return SourceView;
 
