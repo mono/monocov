@@ -60,11 +60,11 @@ cortests:
 	MONO_PATH=../mcs/class/corlib mono --profile=monocov:outfile=corlib-tests.cov,+[mscorlib] nunit-console.exe corlib_test.dll
 
 xml-cortests:
-	./monocov.exe --export-xml=export corlib-tests.cov
+	mono ./monocov.exe --export-xml=export corlib-tests.cov
 	tar cvzf corlib-tests.tar.gz export
 
 html-cortests:
-	./monocov.exe --export-html=html-export corlib-tests.cov
+	mono ./monocov.exe --export-html=html-export corlib-tests.cov
 	tar cvzf html-tests.tar.gz html-export
 
 emittests:
