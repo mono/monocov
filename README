@@ -25,7 +25,7 @@ problems, so this won't be neccessary in the future.
 To produce coverage info for an .NET program, compile it with the -g
 switch to generate debug information. After this, run the program as follows:
 
-$ ./mono --profile:monocov prog.exe
+$ ./mono --profile=monocov prog.exe
 
 This will produce a coverage data file called prog.exe.cov. You can run the
 analyser program as follows:
@@ -40,7 +40,7 @@ generated. Filters are string which are applied agains the fully qualified
 names of classes, e.g. [assemblyname]classname. You can specify filters 
 directly on the command line:
 
-$ ./mono --profile:monocov:-Security,-[System.Xml] prog.exe
+$ ./mono --profile=monocov:-Security,-[System.Xml] prog.exe
 
 There are two types of filters: include filters, whose name begins with '+',
 and exclude filters, whose name begins with '-'. Include filters are checked
@@ -48,7 +48,7 @@ before exclude filters.
 
 For example:
 
-$ ./mono --profile:monocov:+[corlib],-Hashtable prog.exe
+$ ./mono --profile=monocov:+[corlib],-Hashtable prog.exe
 
 This will collect coverage info for all classes in corlib, except the ones
 whose name contains 'Hashtable'.
