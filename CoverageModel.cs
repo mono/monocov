@@ -84,9 +84,16 @@ public class CoverageModel : CoverageItem {
 
 			Assembly assembly = Assembly.Load (assemblyName);
 
-			if  (assembly.GetLoadedModules ()[0].Mono_GetGuid () !=
-				 new Guid (guid)) {
-				Console.WriteLine ("WARNING: Loaded version of assembly " + assembly + " is different from the version used to collect coverage data.");
+			MethodInfo getguid = typeof (Module).GetMethod (
+					"Mono_GetGuid", BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic,
+					null, CallingConventions.Any, new Type [0], null);
+
+			if (getguid != null) {
+				Guid assembly_guid = (Guid)getguid.Invoke (assembly.GetLoadedModules ()[0], new object [0]);
+				Console.WriteLine (assembly_guid);
+				if (assembly_guid != new Guid (guid)) {
+					Console.WriteLine ("WARNING: Loaded version of assembly " + assembly + " is different from the version used to collect coverage data.");
+				}
 			}
 
 			MonoSymbolFile symbolFile;

@@ -1,3 +1,8 @@
+2004-05-13  Zoltan Varga  <vargaz@freemail.hu>
+
+	* CoverageModel.cs: Invoke GetGuid dynamically since it is no longer
+	public.
+
 2004-04-15  Rafael Teixeira <rafaelteixeirabr@hotmail.com>
 	*: README - nowadays it's mono --profile=xxx and not --profile:xxx
 
