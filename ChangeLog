@@ -1,3 +1,7 @@
+2003-07-05  Zoltan Varga  <vargaz@freemail.hu>
+
+	* style.xsl: Made the output valid HTML 4.0 Transitional.
+
 2003-07-03  Zoltan Varga  <vargaz@freemail.hu>
 
 	* coverage.c (mono_profiler_startup): Fix startup if no arguments

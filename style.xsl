@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-  <xsl:output method="html"/>
+  <xsl:output method="html" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"/>
   <xsl:param name="link-suffix" select="'.xml'"/>
   <xsl:template match="/">
-    <html>
+    <html lang="en">
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
       <style type="text/css">
         table th { text-align: center }
         .hit { background-color: lime; vertical-align: middle }
@@ -52,7 +53,6 @@
           </tr>
           <!-- root item -->
           <xsl:apply-templates select="./project | ./namespace | ./class"/>
-          <tr/>
           <!-- child items -->
           <xsl:apply-templates select="/*//project | /*//namespace | /*//class">
             <xsl:sort select="@name"/>
@@ -94,10 +94,12 @@
         <td align="center"><xsl:value-of select="coverage/@missed"/></td>
         <td align="center"><xsl:value-of select="coverage/@coverage"/>%</td>
         <td>
-          <table background="blue" cellspacing="0" cellpadding="0" width="100%">
+          <table cellspacing="0" cellpadding="0" width="100%">
             <tr>
-              <td><img class="hit" width="{coverage/@coverage}%" src="trans.gif" height="12"></img>
-              <img class="missed" width="{100 - coverage/@coverage}%" src="trans.gif" height="12"/></td>
+              <td>
+                <img class="hit" width="{coverage/@coverage}%" src="trans.gif" height="12" alt=""/>
+                <img class="missed" width="{100 - coverage/@coverage}%" src="trans.gif" height="12" alt=""/>
+              </td>
             </tr>
           </table>
         </td>
