@@ -273,8 +273,8 @@ public class CoverageModel : CoverageItem {
 				offset += prev_offset;
 				prev_offset = offset;
 
-				int line1;
-				int line2;
+				int line1 = 0;
+				int line2 = 0;
 
 				bool found = GetSourceRangeFor (offset, method, lines, ref line1, ref line2);
 
@@ -327,8 +327,8 @@ public class CoverageModel : CoverageItem {
 		 * entries.
 		 */
 
-		int beginOffset;
-		int endOffset;
+		int beginOffset = 0;
+		int endOffset = 0;
 		int i;
 
 		for (i = 0; i < lines.Length; ++i) {

@@ -1,6 +1,6 @@
 
 PROJECTNAME = monocov
-GUI = qt
+GUI = gtk
 MONO_ROOT = ../mono
 
 all: monocov.exe libmono-profiler-monocov.so symbols.exe nunit-console.exe
@@ -8,7 +8,8 @@ all: monocov.exe libmono-profiler-monocov.so symbols.exe nunit-console.exe
 ifeq ($(GUI), gtk)
 GUI_SRCS = \
 	gui/gtk/MonoCov.cs \
-	gui/gtk/CoverageView.cs
+	gui/gtk/CoverageView.cs \
+	gui/gtk/SourceWindow.cs
 GUI_LIBS = -r gtk-sharp.dll -r gdk-sharp.dll -r glib-sharp.dll -r glade-sharp.dll -r gnome-sharp.dll -r System.Drawing -resource:gui/gtk/monocov.glade,monocov.glade
 else
 GUI_SRCS = \
