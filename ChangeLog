@@ -1,3 +1,7 @@
+2003-10-17  Zoltan Varga  <vargaz@freemail.hu>
+
+	* nunit-console.cs: Update to latest nunit.
+
 2003-07-05  Zoltan Varga  <vargaz@freemail.hu>
 
 	* style.xsl: Made the output valid HTML 4.0 Transitional.

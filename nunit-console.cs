@@ -56,6 +56,9 @@ public class ConsoleOptions : Options
 	[Option("do not print summary", "no-summary")]
 		public bool noSummary = false;
 
+	[Option("print names of tests as they are executed", 'v', "verbose")]
+		public bool verbose = false;
+
 	public override WhatToDoNext DoAbout() {
 		base.DoAbout ();
 		return WhatToDoNext.AbandonProgram;
@@ -64,7 +67,7 @@ public class ConsoleOptions : Options
 
 	public class ConsoleUi
 	{
-		private NUnit.Framework.TestDomain testDomain;
+		private NUnit.Core.TestDomain testDomain;
 		private string outputFile;
 		private XmlTextReader transformReader;
 		private static ConsoleOptions options;
@@ -75,9 +78,7 @@ public class ConsoleOptions : Options
 			options.ProcessArgs (args);
 			args = options.RemainingArguments;
 
-			ConsoleWriter outStream = new ConsoleWriter(Console.Out);
-			ConsoleWriter errorStream = new ConsoleWriter(Console.Error);
-			NUnit.Framework.TestDomain domain = new NUnit.Framework.TestDomain(outStream, errorStream);
+			NUnit.Core.TestDomain domain = new NUnit.Core.TestDomain();
 
 			if (args.Length < 1) {
 				options.DoUsage ();
@@ -90,12 +91,11 @@ public class ConsoleOptions : Options
 			Test test;
 
 			if (args.Length == 1)
-				test = domain.Load (assembly);
+				test = domain.LoadAssembly (assembly);
 			else
-				test = domain.Load (args [1], assembly);
-
+				test = domain.LoadAssembly (assembly, args [1]);
 			if (test == null) {
-				Console.Error.WriteLine("\nERROR: Unable to load test suite from assembly {1}", assembly);
+				Console.Error.WriteLine("\nERROR: Unable to load test suite from assembly {0}", assembly);
 				return 1;
 			}
 				
@@ -133,7 +133,7 @@ public class ConsoleOptions : Options
 			writer.WriteLine("/transform:<file>           XSL transform file");
 		}
 
-		public ConsoleUi(NUnit.Framework.TestDomain testDomain, string xmlFile, XmlTextReader reader)
+		public ConsoleUi(NUnit.Core.TestDomain testDomain, string xmlFile, XmlTextReader reader)
 		{
 			this.testDomain = testDomain;
 			outputFile = xmlFile;
@@ -145,8 +145,11 @@ public class ConsoleOptions : Options
 			EventCollector collector = new EventCollector();
 			Console.WriteLine ();
 
+			ConsoleWriter outStream = new ConsoleWriter(Console.Out);
+			ConsoleWriter errorStream = new ConsoleWriter(Console.Error);
+
 			if (!options.noSummary) {
-				TestResult result = testDomain.Run(collector);
+				TestResult result = testDomain.Run(collector, outStream, errorStream);
 				Console.WriteLine("\n");
 				XmlResultVisitor resultVisitor = new XmlResultVisitor(outputFile, result);
 				result.Accept(resultVisitor);
@@ -155,7 +158,7 @@ public class ConsoleOptions : Options
 				return result.IsFailure ? 1 : 0;
 			}
 			else {
-				testDomain.Run (collector);
+				testDomain.Run (collector, outStream, errorStream);
 				return 0;
 			}
 		}
@@ -188,6 +191,11 @@ public class ConsoleOptions : Options
 
 			public void TestStarted(TestCase testCase)
 			{
+				if (!testCase.Suite.ShouldRun)
+					return;
+
+				if (options.verbose)
+					Console.WriteLine (testCase.Name);
 				Console.Write (".");
 			}
 
