@@ -1,4 +1,10 @@
-
+//
+// Missing:
+//    DoubleClick action:
+//       DoubleClick onmethod, call ShowSrouceFor (method.Parent)
+//    Context menu.
+//    Images for namespaces open/close and class.
+//
 
 using Gtk;
 using GLib;
@@ -64,9 +70,18 @@ public class CoverageView {
 	}
 
 	public class MethodItem : TreeItem {
-		public MethodItem (TreeStore store, TreeItem parent, CoverageItem model, string title)
+		public ClassItem ParentClass;
+		
+		public MethodItem (TreeStore store, TreeItem parent, ClassItem parent_class, CoverageItem model, string title)
 			: base (store, parent, model, title)
 		{
+			ParentClass = parent_class;
+		}
+		
+		public MethodCoverageItem Model {
+			get {
+				return (MethodCoverageItem)model;
+			}
 		}
 	}
 
@@ -74,6 +89,12 @@ public class CoverageView {
 		public ClassItem (TreeStore store, TreeItem parent, CoverageItem model, string title)
 			: base (store, parent, model, title)
 		{
+		}
+
+		public ClassCoverageItem Model {
+			get {
+				return (ClassCoverageItem) model;
+			}
 		}
 	}
 
@@ -92,6 +113,7 @@ public class CoverageView {
 	Hashtable namespaces;
 	Hashtable classes;
 	CoverageModel model;
+	Hashtable source_views;
 	
 	public CoverageView (string fileName)
 	{
@@ -145,8 +167,7 @@ public class CoverageView {
 			if (nsItem.model.filtered)
 				continue;
 
-			TreeItem classItem = new ClassItem (store, nsItem, klass, klass.name);
-			//			classItem.SetPixmap (0, classPixmap);
+			ClassItem classItem = new ClassItem (store, nsItem, klass, klass.name);
 
 			// We should create the method nodes only when the class item
 			// is opened
@@ -159,7 +180,7 @@ public class CoverageView {
 				if (title.Length > 64)
 					title = title.Substring (0, 63) + "...)";
 
-				new MethodItem (store, classItem, method, title);
+				new MethodItem (store, classItem, classItem, method, title);
 			}
 		}
 
@@ -171,6 +192,7 @@ public class CoverageView {
 		tree.ButtonPressEvent += new ButtonPressEventHandler (OnButtonPress);
 		tree.Selection.Mode = SelectionMode.Single;
 
+		source_views = new Hashtable ();
 		// LAME: Why doesn't widgets visible by default ???
 		tree.Show ();
 	}
@@ -181,6 +203,29 @@ public class CoverageView {
 			OnDoubleClick ();
 	}
 
+	SourceWindow ShowSourceFor (ClassItem item)
+	{
+		if (item == null){
+			Console.WriteLine ("oops");
+		}
+		if (item.Model == null){
+			Console.WriteLine ("oops2");
+		}
+		if (item.Model.sourceFile == null){
+			Console.WriteLine ("oops3");
+		}
+		SourceWindow SourceView = (SourceWindow)source_views [item.Model.sourceFile];
+		if (SourceView != null) {
+			SourceView.Show ();
+		} else {
+			SourceView = new SourceWindow (item);
+			source_views [item.Model.sourceFile] = SourceView;
+			SourceView.Show ();
+		}
+		return SourceView;
+
+	}
+	
 	void OnDoubleClick ()
 	{
 		TreeModel model;
@@ -191,14 +236,19 @@ public class CoverageView {
 
 		GLib.Value value;
 		model.GetValue (iter, 4, out value);
-		object a = value.Val;
+		object item = value.Val;
 
-		Console.WriteLine ("Type is: " + a.GetType ().ToString ());
-		if (tree.RowExpand (model.GetPath (iter))) {
-			// LAME: This seems to collapse the entire tree...
-			tree.CollapseRow (model.GetPath (iter));
+		if (item is MethodItem){
+                        MethodItem method = (MethodItem)item;
+                        SourceWindow sourceView = ShowSourceFor (method.ParentClass);
+                        sourceView.CenterOnMethod (method);
 		} else {
-			tree.ExpandRow (model.GetPath (iter), false);
+			if (tree.RowExpand (model.GetPath (iter))) {
+				// LAME: This seems to collapse the entire tree...
+				tree.CollapseRow (model.GetPath (iter));
+			} else {
+				tree.ExpandRow (model.GetPath (iter), false);
+			}
 		}
 	}
 	
