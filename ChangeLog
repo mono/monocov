@@ -1,0 +1,33 @@
+2003-07-02  Zoltan Varga  <vargaz@freemail.hu>
+
+	* all: Initial import into CVS.
+
+2003-07-01  Zoltan Varga  <vargaz@freemail.hu>
+
+	* HtmlExporter.cs: Implemented HTML exporter.
+
+	* style.xsl: Small modifications needed by the HTML export method.
+
+2003-06-07  Zoltan Varga  <vargaz@freemail.hu>
+
+	* New version with many enchantments.
+
+2003-01-06  Zoltan Varga  <vargaz@freemail.hu>
+
+	* gui/qt/SourceView.cs: fixed viewing of source files which contain
+	tags recognized by QTextEdit.
+
+2003-01-05  Zoltan Varga  <vargaz@freemail.hu>
+
+	* coverage.c: Handle nested types correctly.
+
+2002-12-30  Zoltan Varga  <vargaz@freemail.hu>
+
+	* coverage.c README: Added filters to the back end. They can be used by
+	passing the '--coverage-args filterfile=<NAME>' argument on the command
+	line.
+
+2002-12-28  Zoltan Varga  <vargaz@freemail.hu>
+
+	* first public version.
+
