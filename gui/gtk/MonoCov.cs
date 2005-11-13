@@ -67,7 +67,7 @@ public class MonoCovGui {
 		dialog = new MessageDialog (main, DialogFlags.Modal, MessageType.Info,
 					    ButtonsType.Ok,
 					    "A Coverage Analysis program for MONO.\n" +
-					    "By Zoltan Varga (vargaz@freemail.hu)\n" +
+					    "By Zoltan Varga (vargaz@gmail.com)\n" +
 					    "Powered by\n" +
 					    "MONO (http://www.go-mono.com)\n" + 
 					    "and Gtk# (http://gtk-sharp.sourceforge.net)");

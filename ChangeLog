@@ -1,3 +1,7 @@
+2005-11-13  Zoltan Varga  <vargaz@gmail.com>
+
+	* Makefile gui/gtk/MonoCov.cs: Update to latest mono.
+
 2005-07-21  Zoltan Varga  <vargaz@freemail.hu>
 
 	* LICENSE: Change license to the class libs license.
