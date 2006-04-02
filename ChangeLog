@@ -1,3 +1,7 @@
+2006-04-02  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
+
+	* Makefile: Use gtk-sharp gnome-sharp and glade-sharp in 2.0 verions.
+
 2005-11-13  Zoltan Varga  <vargaz@gmail.com>
 
 	* Makefile gui/gtk/MonoCov.cs: Update to latest mono.

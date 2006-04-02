@@ -10,7 +10,7 @@ GUI_SRCS = \
 	gui/gtk/MonoCov.cs \
 	gui/gtk/CoverageView.cs \
 	gui/gtk/SourceWindow.cs
-GUI_LIBS = -pkg:gtk-sharp -pkg:gnome-sharp -pkg:glade-sharp -r:System.Drawing -resource:gui/gtk/monocov.glade,monocov.glade
+GUI_LIBS = -pkg:gtk-sharp-2.0 -pkg:gnome-sharp-2.0 -pkg:glade-sharp-2.0 -r:System.Drawing -resource:gui/gtk/monocov.glade,monocov.glade
 else
 GUI_SRCS = \
 	gui/qt/MonoCov.cs \
