@@ -160,16 +160,21 @@ public class CoverageModel : CoverageItem {
 			Type t = assembly.GetType (className);
 			if (t == null) {
 				Console.WriteLine ("ERROR: Unable to resolve type " + className + " in " + assembly);
-				return;
+				continue;
 			}
 
 			ClassCoverageItem klass = ProcessClass (t);
 
 			MethodEntry entry = symbolFile.GetMethodByToken (Int32.Parse (token));
 
-			MethodBase monoMethod = (MethodBase) typeof (Assembly).InvokeMember ("MonoDebugger_GetMethod",
-				BindingFlags.Static | BindingFlags.InvokeMethod | BindingFlags.NonPublic,
-				null, assembly, new object [2] { assembly, Int32.Parse (token) }, null); 
+			Module[] modules = assembly.GetModules();
+
+			if (modules.Length > 1)
+				Console.WriteLine("WARNING: Assembly had more than one module. Using the first.");
+
+			Module module = modules[0];
+
+			MethodBase monoMethod = module.ResolveMethod(Int32.Parse(token));
 
 			ProcessMethod (monoMethod, entry, klass, methodName, cov_info);
 		}

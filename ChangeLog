@@ -1,3 +1,9 @@
+2006-04-03  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
+
+	* Makefile: Use gmcs instead of mcs.
+	* symbols.cs: Updated after port to gmcs.
+	* CoverageModel.cs: Updated after port to gmcs.
+
 2006-04-02  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
 
 	* Makefile: Use gtk-sharp gnome-sharp and glade-sharp in 2.0 verions.

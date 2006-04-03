@@ -33,7 +33,7 @@ SRCS = \
 	$(GUI_SRCS)
 
 monocov.exe: $(SRCS) style.xsl .gui-$(GUI)
-	mcs -debug /target:exe /out:$@ -define:GUI_$(GUI) -r:Mono.CompilerServices.SymbolWriter -r:Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
+	gmcs -debug /target:exe /out:$@ -define:GUI_$(GUI) -r:Mono.CompilerServices.SymbolWriter -r:Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
 
 .gui-gtk:
 	@rm -f .gui-*
@@ -44,16 +44,16 @@ monocov.exe: $(SRCS) style.xsl .gui-$(GUI)
 	@touch .gui-qt
 
 symbols.exe: symbols.cs
-	mcs -debug /target:exe /out:$@ -r:Mono.CompilerServices.SymbolWriter symbols.cs
+	gmcs -debug /target:exe /out:$@ -r:Mono.CompilerServices.SymbolWriter symbols.cs
 
 nunit-console.exe: nunit-console.cs
-	mcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
+	gmcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
 
 libmono-profiler-monocov.so: coverage.c
 	$(CC) -g -I$(MONO_ROOT) `pkg-config --cflags glib-2.0` --shared -fPIC -o $@ $^
 
 test:
-	mcs -g test.cs
+	gmcs -g test.cs
 	mono --profile=monocov:outfile=res.cov test.exe
 
 cortests:
@@ -74,7 +74,7 @@ hash-test:
 	mono --profile=monocov:+Hashtable hash-table.exe
 
 test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
-	mcs -g /out:$@ $^
+	gmcs -g /out:$@ $^
 
 clean:
 	rm -f monocov.exe symbols.exe nunit-console.exe libmono-profiler-monocov.so
