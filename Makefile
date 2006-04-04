@@ -53,7 +53,7 @@ libmono-profiler-monocov.so: coverage.c
 	$(CC) -g -I$(MONO_ROOT) `pkg-config --cflags glib-2.0` --shared -fPIC -o $@ $^
 
 test:
-	gmcs -g test.cs
+	gmcs -debug test.cs
 	mono --profile=monocov:outfile=res.cov test.exe
 
 cortests:
@@ -74,7 +74,7 @@ hash-test:
 	mono --profile=monocov:+Hashtable hash-table.exe
 
 test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
-	gmcs -g /out:$@ $^
+	gmcs -debug /out:$@ $^
 
 clean:
 	rm -f monocov.exe monocov.exe.mdb symbols.exe symbols.exe.mdb nunit-console.exe libmono-profiler-monocov.so

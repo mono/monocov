@@ -1,5 +1,12 @@
 2006-04-04  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
 
+	* CoverageModel.cs: Removed redundant for loops
+	in GetSourceRangeFor.
+
+	* Makefile: Use -debug instead of -g.
+
+2006-04-04  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
+
 	* Makefile: Fixed clean target.
 	* README: Updated.
 
@@ -44,6 +51,7 @@
 	public.
 
 2004-04-15  Rafael Teixeira <rafaelteixeirabr@hotmail.com>
+
 	*: README - nowadays it's mono --profile=xxx and not --profile:xxx
 
 2004-04-15  Zoltan Varga  <vargaz@freemail.hu>
