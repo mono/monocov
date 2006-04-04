@@ -77,7 +77,7 @@ test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
 	gmcs -g /out:$@ $^
 
 clean:
-	rm -f monocov.exe symbols.exe nunit-console.exe libmono-profiler-monocov.so
+	rm -f monocov.exe monocov.exe.mdb symbols.exe symbols.exe.mdb nunit-console.exe libmono-profiler-monocov.so
 
 distrib:
 	tar -cvhzf $(PROJECTNAME).tar.gz `cat MANIFEST` && DIRNAME=$(PROJECTNAME)-`date +%d-%b-%y` && rm -rf $$DIRNAME && mkdir $$DIRNAME && mv $(PROJECTNAME).tar.gz $$DIRNAME && cd $$DIRNAME && tar -xzf $(PROJECTNAME).tar.gz && rm $(PROJECTNAME).tar.gz && cd - && tar -cvzf $$DIRNAME.tar.gz $$DIRNAME && rm -rf $$DIRNAME

@@ -1,5 +1,10 @@
 2006-04-04  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
 
+	* Makefile: Fixed clean target.
+	* README: Updated.
+
+2006-04-04  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>
+
 	* .: Added svn:ignore property values.
 
 2006-04-03  Jacob Ilsø Christensen  <jacobilsoe@gmail.com>

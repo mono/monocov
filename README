@@ -22,7 +22,7 @@ problems, so this won't be neccessary in the future.
 2.1 COVERAGE DATA COLLECTION
 ----------------------------
 
-To produce coverage info for an .NET program, compile it with the -g
+To produce coverage info for an .NET program, compile it with the -debug
 switch to generate debug information. After this, run the program as follows:
 
 $ ./mono --profile=monocov prog.exe
@@ -104,7 +104,8 @@ zlib/libpng.
 6. CONTACT
 ----------
 
-Zoltan Varga (vargaz@freemail.hu) 
+Zoltan Varga (vargaz@freemail.hu)
+Jacob Ilsø Christensen (jacobilsoe@gmail.com)
 or 
 the mono devel list (mono-devel-list@ximian.com)
 
