@@ -1,4 +1,9 @@
 
+Fri Nov 24 19:41:04 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* XmlExporter.cs: deal with nested types by changing slashes
+	into dots in filenames.
+
 Fri Nov 24 17:01:27 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* Makefile, configure: added configure script and install/dist target.

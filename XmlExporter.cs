@@ -142,7 +142,7 @@ public class XmlExporter {
 				ClassCoverageItem klass = (ClassCoverageItem)item;
 				writer.WriteStartElement ("class");
 				writer.WriteAttributeString ("name", klass.name);
-				writer.WriteAttributeString ("fullname", klass.FullName);
+				writer.WriteAttributeString ("fullname", klass.FullName.Replace('/', '.'));
 			}
 
 		WriteCoverage (item);
@@ -193,7 +193,7 @@ public class XmlExporter {
 		foreach (ClassCoverageItem item in model.Classes.Values) {
 			bool filtered = false;
 
-			string fileName = Path.Combine (DestinationDir, String.Format ("class-{0}.xml", item.FullName));
+			string fileName = Path.Combine (DestinationDir, String.Format ("class-{0}.xml", item.FullName.Replace('/', '.')));
 
 			if (item.filtered)
 				filtered = true;
@@ -229,7 +229,7 @@ public class XmlExporter {
 
 		writer.WriteStartElement ("class");
 		writer.WriteAttributeString ("name", item.name);
-		writer.WriteAttributeString ("fullname", item.FullName);
+		writer.WriteAttributeString ("fullname", item.FullName.Replace('/', '.'));
 		writer.WriteAttributeString ("namespace", item.Namespace);
 
 		WriteCoverage (item);
