@@ -55,10 +55,12 @@ libmono-profiler-monocov.so: coverage.c
 
 install: all
 	mkdir -p $(prefix)/lib/monocov
+	mkdir -p $(prefix)/man/man1
 	cp Mono.Cecil.dll $(prefix)/lib/monocov
 	cp monocov.exe $(prefix)/lib/monocov
 	cp monocov $(prefix)/bin
-	cp libmono-profiler-monocov.so $(prefix)/lib/monocov
+	cp libmono-profiler-monocov.so $(prefix)/lib/
+	cp monocov.1 $(prefix)/man/man1
 
 test:
 	gmcs -debug test.cs

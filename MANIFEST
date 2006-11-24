@@ -24,3 +24,4 @@ test.cs
 symbols.cs
 nunit-console.cs
 coverage.c
+monocov.1

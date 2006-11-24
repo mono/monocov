@@ -1,0 +1,52 @@
+.TH "monocov" 1
+.SH NAME
+monocov \- Mono Coverage Viewer
+.SH SYNOPSIS
+.B monocov
+[options] [coverage-file]
+.SH OPTIONS
+.TP
+.I \-export-html:DIR
+Export the coverage data as HTML files in directory DIR.
+.TP
+.I \-export-xml:DIR
+Export the coverage data as XML files in directory DIR.
+.TP
+.I \-version
+Print version information.
+.TP
+.I \-no-progress
+Shows no progress messages during the export process
+.TP
+.I \-stylesheet:FILE
+Uses the XSL stylesheet FILE for XML->HTML conversion
+.PP
+.SH DESCRIPTION
+monocov is a tool that allows you to view the information contained in
+coverage data files produced by the Mono coverage profiler. By default
+a graphical user interface is started, otherwise the data can be output
+to XML or HTML files in a specified directory.
+.PP
+The data files can be created by running the program that exercises the code paths
+(for example a test suite runner like nunit) with the --profile=monocov mono option:
+.nf
+	mono --debug --profile=monocov:outfile=data.cov program.exe
+.fi
+Note the use of the --debug option, too. When the program exits, the coverage data
+will be written to the data.cov file.
+If you want to restrict the covergae data to be collected only for some
+specific assemblies, you can especify and additiona option:
+.nf
+	mono --debug --profile=monocov:outfile=data.cov,+[System.Xml] program.exe
+.fi
+to collect data only from the System.Xml assembly.
+.PP
+To start the GUI, simply type:
+.nf
+	monocov data.cov
+.fi
+.PP
+.SH MAILING LISTS
+Visit http://lists.ximian.com/mailman/listinfo/mono-devel-list for details.
+.SH WEB SITE
+Visit http://www.mono-project.com for details

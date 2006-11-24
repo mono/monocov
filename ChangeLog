@@ -1,4 +1,8 @@
 
+Fri Nov 24 20:09:05 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* Fixes and manpage added.
+
 Fri Nov 24 19:41:04 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* XmlExporter.cs: deal with nested types by changing slashes

@@ -248,6 +248,8 @@ public class CoverageModel : CoverageItem {
 
 			ProcessMethod (monoMethod, entry, klass, methodName, cov_info);
 #else
+			if ((TokenType)(itok & 0xff000000) != TokenType.Method)
+				continue;
 			AssemblyDefinition assembly = (AssemblyDefinition)loadedAssemblies [assemblyName];
 			MonoSymbolFile symbolFile = (MonoSymbolFile)symbolFiles [assembly];
 

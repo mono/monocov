@@ -44,7 +44,7 @@ fi
 cp $cecilbin .
 
 echo "prefix=$prefix" > config.make
-echo "VERSION=$VERSION" > config.make
+echo "VERSION=$VERSION" >> config.make
 
 echo "#!/bin/sh" > monocov
 echo "exec mono $prefix/lib/monocov/monocov.exe \$@" >> monocov
