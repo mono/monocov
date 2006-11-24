@@ -242,7 +242,7 @@ output_filters (MonoProfiler *prof, FILE *outfile)
 static void
 output_assembly (MonoAssembly *assembly, MonoAssembly *assembly2, FILE *outfile)
 {
-	fprintf (outfile, "\t<assembly name=\"%s\" guid=\"%s\"/>\n", assembly->image->assembly_name, assembly->image->guid);
+	fprintf (outfile, "\t<assembly name=\"%s\" guid=\"%s\" filename=\"%s\"/>\n", assembly->image->assembly_name, assembly->image->guid, mono_image_get_filename (assembly->image));
 }
 
 static int count;
@@ -313,7 +313,10 @@ coverage_shutdown (MonoProfiler *prof)
 	fprintf (outfile, "<?xml version=\"1.0\"?>\n");
 	fprintf (outfile, "<coverage>\n");
 
-	output_filters (prof, outfile);
+	/*
+	 * The UI doesn't deal well with this enabled.
+	 * output_filters (prof, outfile);
+	 */
 
 	g_hash_table_foreach (prof->assemblies, (GHFunc)output_assembly, outfile);
 

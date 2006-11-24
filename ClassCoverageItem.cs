@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using Mono.Cecil;
 
 namespace MonoCov {
 
@@ -15,7 +16,11 @@ public class ClassCoverageItem : CoverageItem {
 	public SourceFileCoverageData sourceFile;
 
 	// The type object representing this class
+#if USE_REFLECTION
 	public Type type;
+#else
+	public TypeDefinition type;
+#endif
 
 	// Contains MethodBase -> MethodCoverageData mappings
 	public Hashtable methodsByMethod;

@@ -2,19 +2,16 @@
 1. INTRODUCTION
 ---------------
 
-  MonoCov is a line coverage analysis program for mono. It can be used to 
+MonoCov is a line coverage analysis program for mono. It can be used to 
 display coverage data collected while running a .NET program. There are two
-types of GUI interfaces, one implemented using Qt#, while the other is 
-implemented using Gtk#. The Qt# version is more advanced.
+parts in the tool: a profiler module which is used during the execution of
+the program you want to gather coverage data from and a Gtk# user interface.
 
 1.5 REQUIREMENTS
 ----------------
 
-The runtime parts are tested with the then current Mono CVS. The Qt# GUI 
-requires a patched version of the Qt# library which is included in the 
-distribution. This file is named Qt-monocov.dll, and the original Qt.dll should
-be replace with this file. The upcoming Qt# 0.7.1 release fixes most of the
-problems, so this won't be neccessary in the future.
+Recent Mono and Gtk# releases. You also need Mono.Cecil installed
+or copied in the source dir and where the programs are run from..
 
 2. USAGE
 --------
@@ -25,12 +22,12 @@ problems, so this won't be neccessary in the future.
 To produce coverage info for an .NET program, compile it with the -debug
 switch to generate debug information. After this, run the program as follows:
 
-$ ./mono --profile=monocov prog.exe
+$ mono --debug --profile=monocov prog.exe
 
 This will produce a coverage data file called prog.exe.cov. You can run the
 analyser program as follows:
 
-$ ./mono monocov.exe prog.exe.cov
+$ mono monocov.exe prog.exe.cov
 
 This will display the class hierarchy of the program with the corresponding
 coverage information.
@@ -40,7 +37,7 @@ generated. Filters are string which are applied agains the fully qualified
 names of classes, e.g. [assemblyname]classname. You can specify filters 
 directly on the command line:
 
-$ ./mono --profile=monocov:-Security,-[System.Xml] prog.exe
+$ mono --debug --profile=monocov:-Security,-[System.Xml] prog.exe
 
 There are two types of filters: include filters, whose name begins with '+',
 and exclude filters, whose name begins with '-'. Include filters are checked
@@ -48,7 +45,7 @@ before exclude filters.
 
 For example:
 
-$ ./mono --profile=monocov:+[corlib],-Hashtable prog.exe
+$ mono --debug --profile=monocov:+[mscorlib],-Hashtable prog.exe
 
 This will collect coverage info for all classes in corlib, except the ones
 whose name contains 'Hashtable'.
@@ -56,13 +53,13 @@ whose name contains 'Hashtable'.
 2.2 ANALYSIS
 ------------
 
-  The collected coverage data can be browsed using the monocov.exe program. 
+  The collected coverage data can be browsed using the monocov program. 
 This program will read the data file produced by the profiler module, and 
 display its contents in a hierarchical fashion.
   It is also possible to export the contents of a data file into XML, which
 can be viewed in an XSL capable browser like mozilla.
 To export the data as XML, run monocov like this:
-	monocov.exe --export-xml=<DEST DIR> <DATA FILE NAME>
+	monocov --export-xml=<DEST DIR> <DATA FILE NAME>
   
 The generated XML files use a default stylesheet which is a bit ugly. It would
 be good if somebody could contribute a better one :)
@@ -70,8 +67,8 @@ be good if somebody could contribute a better one :)
 2.5 KNOWN BUGS
 --------------
 
-Due to some memory management problems in Qt#, the GUI will most likely crash
-on exit. It will also crash if the user tries to load a second data file.
+In the source code view (when double-clicking on an entry), the view is not
+scrolled to the first line of the method.
 
 3. UTILITY PROGRAMS
 -------------------
@@ -112,19 +109,6 @@ the mono devel list (mono-devel-list@ximian.com)
 RANDOM NOTES:
 -------------
 
-- There is a bug in QString:~QString (): it should be
-	if (this != Null)
-		qt_del_QString (rawObject);
-
-- Mono finalizes QApplication before QMainWindow, leading to
-  invalid memory read errors.
-
-- Mono frees the the string[] array passed to qt_new_QMainWindow, leading to
-  invalid read errors.
-
-- DecimalTest2:.ctor () causes the register allocator to allocate more than
-  2^16 registers, overflowing MonoInst->dreg.
-
 - Methods with strange debugging info:
 	- System.Collections.Hashtable..cctor()
 	- SortedList+SynchedSortedList::this [key]
@@ -144,7 +128,6 @@ TODO:
 - Implement merging of coverage results
 - put namespaces above classes in the hierarchy
 - handle missing source files
-- QDesigner
 - Scintilla
 - html output (with XSLT)
 - use Xml serialization in SyntaxHighlighter

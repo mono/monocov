@@ -2,6 +2,7 @@
 PROJECTNAME = monocov
 GUI = gtk
 MONO_ROOT = ../mono
+LIBS=-r:Mono.Cecil
 
 all: monocov.exe libmono-profiler-monocov.so symbols.exe
 
@@ -33,7 +34,7 @@ SRCS = \
 	$(GUI_SRCS)
 
 monocov.exe: $(SRCS) style.xsl .gui-$(GUI)
-	gmcs -debug /target:exe /out:$@ -define:GUI_$(GUI) -r:Mono.CompilerServices.SymbolWriter -r:Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
+	gmcs -debug /target:exe /out:$@ -define:GUI_$(GUI) $(LIBS) -r:Mono.CompilerServices.SymbolWriter -r:Mono.GetOptions $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
 
 .gui-gtk:
 	@rm -f .gui-*

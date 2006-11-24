@@ -2,9 +2,12 @@ using System;
 using System.Collections;
 using System.Xml;
 using System.IO;
+using System.Text;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Mono.CompilerServices.SymbolWriter;
+using Mono.Cecil;
+using Mono.Cecil.Metadata;
 
 namespace MonoCov
 {
@@ -83,7 +86,10 @@ public class CoverageModel : CoverageItem {
 		foreach (XmlNode n in dom.GetElementsByTagName ("assembly")) {
 			string assemblyName = n.Attributes ["name"].Value;
 			string guid = n.Attributes ["guid"].Value;
+			string filename = n.Attributes ["filename"].Value;
+			MonoSymbolFile symbolFile;
 
+#if USE_REFLECTION
 			Assembly assembly = Assembly.Load (assemblyName);
 
 			MethodInfo getguid = typeof (Module).GetMethod (
@@ -96,9 +102,9 @@ public class CoverageModel : CoverageItem {
 				if (assembly_guid != new Guid (guid)) {
 					Console.WriteLine ("WARNING: Loaded version of assembly " + assembly + " is different from the version used to collect coverage data.");
 				}
+			} else {
+				Console.WriteLine ("WARNING: Can't verify the guid of " + assembly);
 			}
-
-			MonoSymbolFile symbolFile;
 
 			loadedAssemblies [assemblyName] = assembly;
 
@@ -110,6 +116,23 @@ public class CoverageModel : CoverageItem {
 				symbolFiles [assembly] = symbolFile;
 				Console.WriteLine (" (" + symbolFile.SourceCount + " files, " + symbolFile.MethodCount + " methods)");
 			}
+#else
+			AssemblyDefinition assembly = AssemblyFactory.GetAssembly (filename);
+			ModuleDefinition module = assembly.MainModule;
+			if (module.Mvid != new Guid (guid)) {
+				Console.WriteLine ("WARNING: Loaded version of assembly " + assembly + " is different from the version used to collect coverage data.");
+			}
+			loadedAssemblies [assemblyName] = assembly;
+
+			Console.Write ("Reading symbols for " + assemblyName + " ...");
+			symbolFile = MonoSymbolFile.ReadSymbolFile (filename + ".mdb");
+			if (symbolFile == null)
+				Console.WriteLine (" (No symbols found)");
+			else {
+				symbolFiles [assembly] = symbolFile;
+				Console.WriteLine (" (" + symbolFile.SourceCount + " files, " + symbolFile.MethodCount + " methods)");
+			}
+#endif
 		}
 	}		
 
@@ -119,6 +142,46 @@ public class CoverageModel : CoverageItem {
 			AddFilter (n.Attributes ["pattern"].Value);
 		}
 	}
+
+#if USE_REFLECTION
+	static Type LoadType (Assembly assembly, string name) {
+		Type type = assembly.GetType (name);
+		if (type != null)
+			return type;
+		int last_dot = name.LastIndexOf ('.');
+		// covert names from IL to reflection naming
+		// needed to deal with nested types
+		while (last_dot >= 0) {
+			StringBuilder sb = new StringBuilder (name);
+			sb [last_dot] = '/';
+			name = sb.ToString ();
+			type = assembly.GetType (name);
+			if (type != null)
+				return type;
+			last_dot = name.LastIndexOf ('.');
+		}
+		return null;
+	}
+#else
+	static TypeDefinition LoadType (AssemblyDefinition assembly, string name) {
+		TypeDefinition type = assembly.MainModule.Types [name];
+		if (type != null)
+			return type;
+		int last_dot = name.LastIndexOf ('.');
+		// covert names from IL to reflection naming
+		// needed to deal with nested types
+		while (last_dot >= 0) {
+			StringBuilder sb = new StringBuilder (name);
+			sb [last_dot] = '/';
+			name = sb.ToString ();
+			type = assembly.MainModule.Types [name];
+			if (type != null)
+				return type;
+			last_dot = name.LastIndexOf ('.');
+		}
+		return null;
+	}
+#endif
 
 	public void ReadFromFile (string fileName)
 	{
@@ -155,14 +218,16 @@ public class CoverageModel : CoverageItem {
 			string methodName = n.Attributes ["name"].Value;
 			string token = n.Attributes ["token"].Value;
 			string cov_info = n.FirstChild.Value;
+			int itok = int.Parse (token);
 			
+#if USE_REFLECTION
 			Assembly assembly = (Assembly)loadedAssemblies [assemblyName];
 			MonoSymbolFile symbolFile = (MonoSymbolFile)symbolFiles [assembly];
 
 			if (symbolFile == null)
 				continue;
 
-			Type t = assembly.GetType (className);
+			Type t = LoadType (assembly, className);
 			if (t == null) {
 				Console.WriteLine ("ERROR: Unable to resolve type " + className + " in " + assembly);
 				continue;
@@ -182,6 +247,29 @@ public class CoverageModel : CoverageItem {
 			MethodBase monoMethod = module.ResolveMethod(Int32.Parse(token));
 
 			ProcessMethod (monoMethod, entry, klass, methodName, cov_info);
+#else
+			AssemblyDefinition assembly = (AssemblyDefinition)loadedAssemblies [assemblyName];
+			MonoSymbolFile symbolFile = (MonoSymbolFile)symbolFiles [assembly];
+
+			if (symbolFile == null)
+				continue;
+
+			TypeDefinition t = LoadType (assembly, className);
+			if (t == null) {
+				Console.WriteLine ("ERROR: Unable to resolve type " + className + " in " + assembly);
+				continue;
+			}
+
+			ClassCoverageItem klass = ProcessClass (t);
+
+			MethodEntry entry = symbolFile.GetMethodByToken (itok);
+
+			MethodDefinition monoMethod = assembly.MainModule.LookupByToken (
+				new MetadataToken ((TokenType)(itok & 0xff000000), (uint)(itok & 0xffffff)))
+				as MethodDefinition;
+			//Console.WriteLine (monoMethod);
+			ProcessMethod (monoMethod, entry, klass, methodName, cov_info);
+#endif
 		}
 
 		msec2 = DateTime.Now.Ticks / 10000;
@@ -190,6 +278,7 @@ public class CoverageModel : CoverageItem {
 
 		// Add info for klasses for which we have no coverage
 
+#if USE_REFLECTION
 		foreach (Assembly assembly in loadedAssemblies.Values) {
 			foreach (Type t in assembly.GetTypes ()) {
 				ProcessClass (t);
@@ -210,6 +299,27 @@ public class CoverageModel : CoverageItem {
 				}
 			}
 		}
+#else
+		foreach (AssemblyDefinition assembly in loadedAssemblies.Values) {
+			foreach (TypeDefinition t in assembly.MainModule.Types) {
+				ProcessClass (t);
+			}
+		}
+
+		// Add info for methods for which we have no coverage
+		foreach (ClassCoverageItem klass in classes.Values) {
+			foreach (MethodDefinition mb in klass.type.Methods) {
+				MonoSymbolFile symbolFile = (MonoSymbolFile)symbolFiles [klass.type.Module.Assembly];
+				if (symbolFile == null)
+					continue;
+
+				if (! klass.methodsByMethod.ContainsKey (mb)) {
+					MethodEntry entry = symbolFile.GetMethodByToken ((int)mb.MetadataToken.ToUInt());
+					ProcessMethod (mb, entry, klass, mb.Name, null);
+				}
+			}
+		}
+#endif
 
 		msec2 = DateTime.Now.Ticks / 10000;
 		Console.WriteLine ("Additional classes: " + (msec2 - msec) + " msec");
@@ -356,7 +466,11 @@ public class CoverageModel : CoverageItem {
 		}
 	}
 
+#if USE_REFLECTION
 	private ClassCoverageItem ProcessClass (Type t)
+#else
+	private ClassCoverageItem ProcessClass (TypeDefinition t)
+#endif
 	{
 		string className = t.FullName;
 		int nsindex = className.LastIndexOf (".");
@@ -403,14 +517,22 @@ public class CoverageModel : CoverageItem {
 			klass.type = t;
 			klass.parent = ns;
 
+#if USE_REFLECTION
 			klass.filtered = IsFiltered ("[" + t.Assembly + "]" + className);
+#else
+			klass.filtered = IsFiltered ("[" + t.Module.Name + "]" + className);
+#endif
 			classes [className] = klass;
 		}
 
 		return klass;
 	}
 
+#if USE_REFLECTION
 	private void ProcessMethod (MethodBase monoMethod, MethodEntry entry, ClassCoverageItem klass, string methodName, string cov_info)
+#else
+	private void ProcessMethod (MethodDefinition monoMethod, MethodEntry entry, ClassCoverageItem klass, string methodName, string cov_info)
+#endif
 	{
 		if (entry == null)
 			// Compiler generated, abstract method etc.
@@ -429,7 +551,11 @@ public class CoverageModel : CoverageItem {
 
 		method.startLine = start_line;
 		method.endLine = end_line;
+#if USE_REFLECTION
 		method.filtered = IsFiltered ("[" + monoMethod.DeclaringType.Assembly + "]" + monoMethod.DeclaringType + "::" + monoMethod.Name);
+#else
+		method.filtered = IsFiltered ("[" + monoMethod.DeclaringType.Module.Name + "]" + monoMethod.DeclaringType + "::" + monoMethod.Name);
+#endif
 		klass.methodsByMethod [monoMethod] = method;
 
 
