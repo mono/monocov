@@ -2,15 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
 
-#include "mono/metadata/tabledefs.h"
-#include "mono/metadata/class.h"
-#include "mono/metadata/mono-debug.h"
-#include "mono/metadata/debug-helpers.h"
-#include "mono/metadata/profiler.h"
-
-#include "mono/metadata/metadata-internals.h"
-#include "mono/metadata/class-internals.h"
+#include <mono/metadata/class.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
+#include <mono/metadata/profiler.h>
 
 struct _MonoProfiler {
 	/* Contains the methods for which we have coverage data */
@@ -136,27 +134,34 @@ collect_coverage_for (MonoProfiler *prof, MonoMethod *method)
 	char *fqn;
 	MonoMethodHeader *header;
 	gboolean has_positive, found;
+	guint32 iflags, flags, code_size;
+	MonoClass *klass;
+	MonoImage *image;
 
-	if ((method->iflags & METHOD_IMPL_ATTRIBUTE_INTERNAL_CALL) ||
-	    (method->flags & METHOD_ATTRIBUTE_PINVOKE_IMPL))
+	flags = mono_method_get_flags (method, &iflags);
+	if ((iflags & 0x1000 /*METHOD_IMPL_ATTRIBUTE_INTERNAL_CALL*/) ||
+	    (flags & 0x2000 /*METHOD_ATTRIBUTE_PINVOKE_IMPL*/))
 		return FALSE;
 
-	if (method->wrapper_type != MONO_WRAPPER_NONE)
-		return FALSE;
+	//if (method->wrapper_type != MONO_WRAPPER_NONE)
+	//	return FALSE;
 
+	klass = mono_method_get_class (method);
+	image = mono_class_get_image (klass);
 	/* Hacky way of determining the executing assembly */
-	if (! prof->outfile_name && (strcmp (method->name, "Main") == 0))
-		prof->outfile_name = g_strdup_printf ("%s.cov", method->klass->image->assembly->image->name);
+	if (! prof->outfile_name && (strcmp (mono_method_get_name (method), "Main") == 0)) {
+		prof->outfile_name = g_strdup_printf ("%s.cov", mono_image_get_filename (image));
+	}
 
 	/* Check filters */
 	if (prof->filters) {
 		/* Check already filtered classes first */
-		if (g_hash_table_lookup (prof->filtered_classes, method->klass))
+		if (g_hash_table_lookup (prof->filtered_classes, klass))
 			return FALSE;
 
-		classname = mono_type_get_name (&method->klass->byval_arg);
+		classname = mono_type_get_name (mono_class_get_type (klass));
 
-		fqn = g_strdup_printf ("[%s]%s", method->klass->image->assembly_name, classname);
+		fqn = g_strdup_printf ("[%s]%s", mono_image_get_name (image), classname);
 
 		// Check positive filters first
 		has_positive = FALSE;
@@ -184,7 +189,7 @@ collect_coverage_for (MonoProfiler *prof, MonoMethod *method)
 			// Skip '-'
 			filter = &filter [1];
 			if (strstr (fqn, filter) != NULL) {
-				g_hash_table_insert (prof->filtered_classes, method->klass, method->klass);
+				g_hash_table_insert (prof->filtered_classes, klass, klass);
 				return FALSE;
 			}
 		}
@@ -192,19 +197,20 @@ collect_coverage_for (MonoProfiler *prof, MonoMethod *method)
 		g_free (classname);
 	}
 
-	header = ((MonoMethodNormal *)method)->header;
+	header = mono_method_get_header (method);
 
-	if (header->code_size > 20000) {
+	mono_method_header_get_code (header, &code_size, NULL);
+	if (code_size > 20000) {
 		exit (1);
-		g_warning ("Unable to instrument method %s:%s since it is too complex.", method->klass->name, method->name);
+		g_warning ("Unable to instrument method %s:%s since it is too complex.", mono_class_get_name (klass), mono_method_get_name (method));
 		return FALSE;
 	}
 
 	g_hash_table_insert (prof->methods, method, method);
 
-	g_hash_table_insert (prof->classes, method->klass, method->klass);
+	g_hash_table_insert (prof->classes, klass, klass);
 
-	g_hash_table_insert (prof->assemblies, method->klass->image->assembly, method->klass->image->assembly);
+	g_hash_table_insert (prof->assemblies, mono_image_get_assembly (image), mono_image_get_assembly (image));
 
 	return TRUE;
 }
@@ -242,7 +248,9 @@ output_filters (MonoProfiler *prof, FILE *outfile)
 static void
 output_assembly (MonoAssembly *assembly, MonoAssembly *assembly2, FILE *outfile)
 {
-	fprintf (outfile, "\t<assembly name=\"%s\" guid=\"%s\" filename=\"%s\"/>\n", assembly->image->assembly_name, assembly->image->guid, mono_image_get_filename (assembly->image));
+	MonoImage *image = mono_assembly_get_image (assembly);
+	fprintf (outfile, "\t<assembly name=\"%s\" guid=\"%s\" filename=\"%s\"/>\n",
+		mono_image_get_name (image), mono_image_get_guid (image), mono_image_get_filename (image));
 }
 
 static int count;
@@ -267,19 +275,23 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 	char *classname;
 	char *tmpsig;
 	FILE *outfile;
+	MonoClass *klass;
+	MonoImage *image;
 
 	outfile = prof->outfile;
-	header = ((MonoMethodNormal *)method)->header;
+	header = mono_method_get_header (method);
 
-	tmpsig = mono_signature_get_desc (method->signature, TRUE);
+	tmpsig = mono_signature_get_desc (mono_method_signature (method), TRUE);
 	tmpsig = g_markup_escape_text (tmpsig, strlen (tmpsig));
 
-	classname = mono_type_get_name (&method->klass->byval_arg);
+	klass = mono_method_get_class (method);
+	classname = mono_type_get_name (mono_class_get_type (klass));
+	image = mono_class_get_image (klass);
 
 	fprintf (outfile, "\t<method assembly=\"%s\" class=\"%s\" name=\"%s (%s)\" token=\"%d\">\n",
-			 method->klass->image->assembly_name,
-			 classname, method->name,
-			 tmpsig, method->token);
+			 mono_image_get_name (image),
+			 classname, mono_method_get_name (method),
+			 tmpsig, mono_method_get_token (method));
 
 	g_free (tmpsig);
 	fprintf (outfile, "\t\t");

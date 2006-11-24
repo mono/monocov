@@ -1,0 +1,59 @@
+#!/bin/sh
+
+VERSION=0.1
+
+help()
+{
+	echo ""
+	echo "Usage is: configure [--prefix=PREFIX]"
+	echo ""
+}
+
+prefix=/usr/local
+
+while [ $# -ne 0 ]; do
+  case $1 in
+    --help)
+    	help
+    	exit 0
+	;;
+    --prefix=*)
+    	prefix=`echo $1 | sed 's/--prefix=//'`;
+	shift
+	;;
+    --prefix)
+        shift
+	prefix="$1"
+	shift
+	;;
+    *)
+	echo Unknown option: $1
+	help
+	shift
+  esac
+done
+
+cecilbin=`pkg-config --variable=Libraries mono-cecil`
+
+if test -z $cecilbin; then
+	echo "Cecil is not installed."
+	exit 1
+fi
+
+# copy Mono.Cecil here
+cp $cecilbin .
+
+echo "prefix=$prefix" > config.make
+echo "VERSION=$VERSION" > config.make
+
+echo "#!/bin/sh" > monocov
+echo "exec mono $prefix/lib/monocov/monocov.exe \$@" >> monocov
+chmod +x monocov
+
+echo ""
+echo "MonoCov module configured"
+echo ""
+echo "     Prefix:           $prefix"
+echo ""
+
+exit 0;

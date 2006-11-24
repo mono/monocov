@@ -1,7 +1,7 @@
+include config.make
 
 PROJECTNAME = monocov
 GUI = gtk
-MONO_ROOT = ../mono
 LIBS=-r:Mono.Cecil
 
 all: monocov.exe libmono-profiler-monocov.so symbols.exe
@@ -51,7 +51,14 @@ nunit-console.exe: nunit-console.cs
 	gmcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
 
 libmono-profiler-monocov.so: coverage.c
-	$(CC) -g -I$(MONO_ROOT) `pkg-config --cflags glib-2.0` --shared -fPIC -o $@ $^
+	$(CC) -g `pkg-config --cflags glib-2.0` --shared -fPIC -o $@ $^
+
+install: all
+	mkdir -p $(prefix)/lib/monocov
+	cp Mono.Cecil.dll $(prefix)/lib/monocov
+	cp monocov.exe $(prefix)/lib/monocov
+	cp monocov $(prefix)/bin
+	cp libmono-profiler-monocov.so $(prefix)/lib/monocov
 
 test:
 	gmcs -debug test.cs
@@ -79,6 +86,17 @@ test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
 
 clean:
 	rm -f monocov.exe monocov.exe.mdb symbols.exe symbols.exe.mdb nunit-console.exe libmono-profiler-monocov.so
+
+distclean:
+	rm -f monocov Mono.Cecil.dll config.make
+
+dist:
+	tar -chzf $(PROJECTNAME)-$(VERSION).tar.gz `cat MANIFEST` \
+		&& DIRNAME=$(PROJECTNAME)-$(VERSION) && rm -rf $$DIRNAME \
+		&& mkdir $$DIRNAME && mv $(PROJECTNAME)-$(VERSION).tar.gz $$DIRNAME \
+		&& cd $$DIRNAME && tar -xzf $(PROJECTNAME)-$(VERSION).tar.gz \
+		&& rm $(PROJECTNAME)-$(VERSION).tar.gz && cd - && tar -cvzf $$DIRNAME.tar.gz $$DIRNAME \
+		&& rm -rf $$DIRNAME
 
 distrib:
 	tar -cvhzf $(PROJECTNAME).tar.gz `cat MANIFEST` && DIRNAME=$(PROJECTNAME)-`date +%d-%b-%y` && rm -rf $$DIRNAME && mkdir $$DIRNAME && mv $(PROJECTNAME).tar.gz $$DIRNAME && cd $$DIRNAME && tar -xzf $(PROJECTNAME).tar.gz && rm $(PROJECTNAME).tar.gz && cd - && tar -cvzf $$DIRNAME.tar.gz $$DIRNAME && rm -rf $$DIRNAME

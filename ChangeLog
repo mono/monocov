@@ -1,4 +1,9 @@
 
+Fri Nov 24 17:01:27 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* Makefile, configure: added configure script and install/dist target.
+	* coverage.c: updated to not require access to mono internals.
+
 Fri Nov 24 16:25:51 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* CoverageModel.cs: updated to use Cecil to load assemblies
