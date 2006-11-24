@@ -60,6 +60,11 @@ public class MonoCovGui {
 		Application.Quit ();
 	}
 
+	public void OnQuit (object o, DeleteEventArgs args)
+	{
+		Application.Quit ();
+	}
+
 	public void OnAbout (object o, EventArgs args)
 	{
 		MessageDialog dialog;

@@ -13,7 +13,7 @@ namespace MonoCov.Gui.Gtk{
 		public SourceWindow (CoverageView.ClassItem klass)
 			: base (klass.Model.sourceFile.sourceFile)
 		{
-			SetDefaultSize (640, 480);
+			SetDefaultSize (800, 600);
 
 			ScrolledWindow sw = new ScrolledWindow ();
 			
@@ -61,10 +61,11 @@ namespace MonoCov.Gui.Gtk{
 		}
 
 		public void CenterOnMethod (CoverageView.MethodItem method) {
-			// TODO: center the given method on the screen
-			//editor.SetCursorPosition (method.Model.startLine - 1, 0);
-			//editor.EnsureCursorVisible ();
-			//editor.MoveCursor (QTextEdit.CursorAction.MoveUp, false);
+			TextIter iter = text_buffer.GetIterAtLine (method.Model.startLine - 1);
+			// this doesn't seem to work
+			text_view.ScrollToIter (iter, 0.0, true, 0, 0.5);
+			text_view.PlaceCursorOnscreen ();
+			Console.WriteLine ("scrolled to line: {0}", method.Model.startLine - 1);
 		}
 	}
 }

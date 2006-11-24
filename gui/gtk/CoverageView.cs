@@ -150,7 +150,10 @@ public class CoverageView {
 		Hashtable classes2 = model.Classes;
 
 		namespaces = new Hashtable ();
-		foreach (string name in classes2.Keys) {
+		string[] sorted_names = new string [classes2.Count];
+		classes2.Keys.CopyTo (sorted_names, 0);
+		Array.Sort (sorted_names);
+		foreach (string name in sorted_names) {
 			ClassCoverageItem klass = (ClassCoverageItem)classes2 [name];
 
 			if (klass.filtered)
@@ -186,8 +189,9 @@ public class CoverageView {
 
 		tree.ExpandRow (store.GetPath (root.Iter), false);
 
-		foreach (string ns in namespaces.Keys)
-			tree.ExpandRow (store.GetPath (((TreeItem)namespaces [ns]).Iter), false);
+		// it becomes very hard to navigate if everything is expanded
+		//foreach (string ns in namespaces.Keys)
+		//	tree.ExpandRow (store.GetPath (((TreeItem)namespaces [ns]).Iter), false);
 
 		tree.ButtonPressEvent += new ButtonPressEventHandler (OnButtonPress);
 		tree.Selection.Mode = SelectionMode.Single;
