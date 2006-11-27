@@ -1,4 +1,9 @@
 
+Mon Nov 27 13:47:24 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* UI updates. Removed unused dependency on gnome-sharp.
+	Upped version.
+
 Fri Nov 24 20:09:05 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* Fixes and manpage added.

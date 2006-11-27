@@ -42,8 +42,8 @@ namespace MonoCov.Gui.Gtk{
 			int pos = 1;
 
 			while (infile.Peek () > -1) {
-				int line = text_buffer.EndIter.Line;
-				text_buffer.Insert (text_buffer.EndIter, String.Format ("{0, 6}  {1}\n", pos, infile.ReadLine ()));
+				TextIter end = text_buffer.EndIter;
+				text_buffer.Insert (ref end, String.Format ("{0, 6}  {1}\n", pos, infile.ReadLine ()));
 				
 				if (pos < coverage.Length) {
 					int count = coverage [pos];

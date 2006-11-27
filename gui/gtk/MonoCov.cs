@@ -11,7 +11,6 @@
 
 using GLib;
 using Gtk;
-//using Gnome;
 using Glade;
 using GtkSharp;
 using System;
@@ -24,7 +23,7 @@ namespace MonoCov.Gui.Gtk {
 
 public class MonoCovGui {
 
-	private static string CAPTION = "MonoCov " + Assembly.GetExecutingAssembly ().GetName ().Version.ToString ();
+	private static string CAPTION = "MonoCov " + Constants.Version;
 	private FileSelection openDialog;
 	private CoverageView coverageView;
 
@@ -32,6 +31,7 @@ public class MonoCovGui {
 
 	[Glade.Widget] Window main;
 	[Glade.Widget] ScrolledWindow scrolledwindow1;
+	[Glade.Widget] ProgressBar progressbar1;
 	
 	public static int GuiMain (String[] args)
 	{
@@ -39,8 +39,12 @@ public class MonoCovGui {
 
 		MonoCovGui main = new MonoCovGui ();
 
-		if (args.Length > 0)
-			main.OpenFile (args[0]);
+		// allow the app to show up first
+		GLib.Idle.Add (delegate (){
+			if (args.Length > 0)
+				main.OpenFile (args[0]);
+			return false;
+		});
 
 		Application.Run ();
 
@@ -85,13 +89,19 @@ public class MonoCovGui {
 		//		if (coverageView != null)
 		//			coverageView.Close (true);
 
-		coverageView = new CoverageView (fileName);
+		progressbar1.Show ();
+		coverageView = new CoverageView (fileName, progressbar1);
 
 		main.Title = (CAPTION + " - " + new FileInfo (fileName).Name);
 
 		scrolledwindow1.Add (coverageView.Widget);
 
 		main.ShowAll ();
+		// allow some time for user feedback
+		GLib.Timeout.Add (1000, delegate {
+			progressbar1.Hide ();
+			return false;
+		});
 	}
 
 	private void ExportAsXml (string destDir)
@@ -112,11 +122,12 @@ public class MonoCovGui {
 		FileSelection dialog = 
 			new FileSelection ("Choose a file");
 
-		// TODO: How to set a filter ???
 
 		dialog.HideFileopButtons ();
 
-		dialog.Filename = "*.cov";
+		// TODO: How to set a filter ???
+		// close, but not usable
+		// dialog.Complete ("*.cov");
 
 		if (dialog.Run () == (int) ResponseType.Ok) {
 			fileName = dialog.Filename;

@@ -323,7 +323,7 @@ coverage_shutdown (MonoProfiler *prof)
 	prof->outfile = outfile;
 
 	fprintf (outfile, "<?xml version=\"1.0\"?>\n");
-	fprintf (outfile, "<coverage>\n");
+	fprintf (outfile, "<coverage version=\"%s\">\n", VERSION);
 
 	/*
 	 * The UI doesn't deal well with this enabled.

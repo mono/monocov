@@ -29,7 +29,7 @@ using MonoCov.Gui.Gtk;
 [assembly: AssemblyDescription("A Coverage Analysis program for .NET")]
 [assembly: AssemblyCopyright("Copyright (C) 2003 Zoltan Varga")]
 [assembly: Mono.Author("Zoltan Varga (vargaz@freemail.hu)")]
-[assembly: AssemblyVersion("0.1")]
+[assembly: AssemblyVersion(Constants.Version)]
 [assembly: Mono.UsageComplement("[<datafile>]")]
 [assembly: Mono.About("")]
 

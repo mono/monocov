@@ -9,7 +9,6 @@
 using Gtk;
 using GLib;
 using Gdk;
-using Gnome;
 using Glade;
 using GtkSharp;
 
@@ -114,8 +113,9 @@ public class CoverageView {
 	Hashtable classes;
 	CoverageModel model;
 	Hashtable source_views, window_maps;
+	ProgressBar status;
 	
-	public CoverageView (string fileName)
+	public CoverageView (string fileName, ProgressBar status)
 	{
 		TreeStore store = new TreeStore (typeof (string), typeof (string), typeof (string), typeof (string), typeof (object));
 		tree = new TreeView (store);
@@ -143,6 +143,8 @@ public class CoverageView {
 		foreach (string filter in DEFAULT_FILTERS) {
 			model.AddFilter (filter);
 		}
+		this.status = status;
+		model.Progress += Progress;
 		model.ReadFromFile (fileName);
 
 		TreeItem root = new TreeItem (store, null, model, "PROJECT");
@@ -153,6 +155,7 @@ public class CoverageView {
 		string[] sorted_names = new string [classes2.Count];
 		classes2.Keys.CopyTo (sorted_names, 0);
 		Array.Sort (sorted_names);
+		Progress ("Building tree", 0.95);
 		foreach (string name in sorted_names) {
 			ClassCoverageItem klass = (ClassCoverageItem)classes2 [name];
 
@@ -198,8 +201,16 @@ public class CoverageView {
 
 		source_views = new Hashtable ();
 		window_maps = new Hashtable ();
+		Progress ("Done", 1.0);
 		// LAME: Why doesn't widgets visible by default ???
 		tree.Show ();
+	}
+
+	void Progress (string part, double percent) {
+		status.Fraction = percent;
+		status.Text = part;
+		while (Application.EventsPending ())
+			Application.RunIteration ();
 	}
 
 	[GLib.ConnectBefore]

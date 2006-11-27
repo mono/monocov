@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.1
+VERSION=0.2
 
 help()
 {
@@ -45,6 +45,7 @@ cp $cecilbin .
 
 echo "prefix=$prefix" > config.make
 echo "VERSION=$VERSION" >> config.make
+echo "class Constants {public const string Version=\"$VERSION\";}"  >Constants.cs
 
 echo "#!/bin/sh" > monocov
 echo "exec mono $prefix/lib/monocov/monocov.exe \$@" >> monocov
@@ -54,6 +55,7 @@ echo ""
 echo "MonoCov module configured"
 echo ""
 echo "     Prefix:           $prefix"
+echo "     Version:          $VERSION"
 echo ""
 
 exit 0;

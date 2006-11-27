@@ -12,6 +12,8 @@ using Mono.Cecil.Metadata;
 namespace MonoCov
 {
 
+public delegate void CoverageProgress (string item, double percent);
+
 public class CoverageModel : CoverageItem {
 
 	private Hashtable namespaces;
@@ -20,6 +22,8 @@ public class CoverageModel : CoverageItem {
 
 	private Hashtable loadedAssemblies;
 	private Hashtable symbolFiles;
+
+	public event CoverageProgress Progress;
 
 	/**
 	 * List of filters, which are strings
@@ -32,6 +36,7 @@ public class CoverageModel : CoverageItem {
 		classes = new Hashtable ();
 		sources = new Hashtable ();
 		filters = new ArrayList ();
+		Progress += delegate {}; // better than having to check every time...
 	}
 
 	public Hashtable Classes {
@@ -196,6 +201,7 @@ public class CoverageModel : CoverageItem {
 		symbolFiles = new Hashtable ();
 
 		XmlDocument dom = new XmlDocument ();
+		Progress ("XML reading", 0);
 		Console.Write ("Loading " + fileName + "...");
 		dom.Load (new XmlTextReader (new FileStream (fileName, FileMode.Open)));
 		Console.WriteLine (" Done.");
@@ -204,6 +210,7 @@ public class CoverageModel : CoverageItem {
 		Console.WriteLine ("XML Reading: " + (msec2 - msec) + " msec");
 		msec = msec2;
 
+		Progress ("Load assemblies", 0.2);
 		LoadAssemblies (dom);
 
 		LoadFilters (dom);
@@ -212,6 +219,7 @@ public class CoverageModel : CoverageItem {
 		Console.WriteLine ("Load assemblies: " + (msec2 - msec) + " msec");
 		msec = msec2;
 
+		Progress ("Load methods", 0.4);
 		foreach (XmlNode n in dom.GetElementsByTagName ("method")) {
 			string assemblyName = n.Attributes ["assembly"].Value;
 			string className = n.Attributes ["class"].Value;
@@ -302,12 +310,14 @@ public class CoverageModel : CoverageItem {
 			}
 		}
 #else
+		Progress ("Not covered classes", 0.6);
 		foreach (AssemblyDefinition assembly in loadedAssemblies.Values) {
 			foreach (TypeDefinition t in assembly.MainModule.Types) {
 				ProcessClass (t);
 			}
 		}
 
+		Progress ("Not covered methods", 0.7);
 		// Add info for methods for which we have no coverage
 		foreach (ClassCoverageItem klass in classes.Values) {
 			foreach (MethodDefinition mb in klass.type.Methods) {
@@ -327,6 +337,7 @@ public class CoverageModel : CoverageItem {
 		Console.WriteLine ("Additional classes: " + (msec2 - msec) + " msec");
 		msec = msec2;
 
+		Progress ("Compute coverage", 0.9);
 		// Compute coverage for all items
 
 		computeCoverage (true);
@@ -336,6 +347,7 @@ public class CoverageModel : CoverageItem {
 		msec = msec2;
 
 		Console.WriteLine ("All: " + (msec2 - begin) + " msec");
+		Progress ("Done loading", 0.9);
 
 		// Free memory
 		symbolFiles = null;
