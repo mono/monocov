@@ -118,6 +118,8 @@ mono_profiler_startup (char *arg)
 	mono_profiler_set_events (MONO_PROFILE_INS_COVERAGE | MONO_PROFILE_ASSEMBLY_EVENTS);
 	mono_profiler_install_coverage_filter (collect_coverage_for);
 	mono_profiler_install_assembly (NULL, assembly_load, NULL, NULL);
+	/* we don't deal with unloading, so disable it for now */
+	setenv ("MONO_NO_UNLOAD", "1", 1);
 }
 
 static void
@@ -226,6 +228,7 @@ add_filter (MonoProfiler *prof, const char *filter)
 		prof->filtered_classes = g_hash_table_new (NULL, NULL);
 	}
 
+	spec = NULL; /* compile a pattern later */
 	g_ptr_array_add (prof->filters, spec);
 	g_ptr_array_add (prof->filters_as_str, g_strdup (filter));
 }
@@ -271,9 +274,9 @@ static void
 output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 {
 	MonoMethodHeader *header;
-	int i;
 	char *classname;
 	char *tmpsig;
+	char *tmpname;
 	FILE *outfile;
 	MonoClass *klass;
 	MonoImage *image;
@@ -288,12 +291,16 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 	classname = mono_type_get_name (mono_class_get_type (klass));
 	image = mono_class_get_image (klass);
 
+	tmpname = mono_method_get_name (method);
+	tmpname = g_markup_escape_text (tmpname, strlen (tmpname));
+
 	fprintf (outfile, "\t<method assembly=\"%s\" class=\"%s\" name=\"%s (%s)\" token=\"%d\">\n",
 			 mono_image_get_name (image),
-			 classname, mono_method_get_name (method),
+			 classname, tmpname,
 			 tmpsig, mono_method_get_token (method));
 
 	g_free (tmpsig);
+	g_free (tmpname);
 	fprintf (outfile, "\t\t");
 	count = 0;
 	prev_offset = 0;

@@ -66,6 +66,12 @@ namespace MonoCov.Gui.Gtk{
 			text_view.ScrollToIter (iter, 0.0, true, 0, 0.5);
 			text_view.PlaceCursorOnscreen ();
 			Console.WriteLine ("scrolled to line: {0}", method.Model.startLine - 1);
+			// the first time we need to do this workaround for
+			// it to actually work...
+			while (Application.EventsPending ())
+				Application.RunIteration ();
+			text_view.ScrollToIter (iter, 0.0, true, 0, 0.5);
+			text_view.PlaceCursorOnscreen ();
 		}
 	}
 }

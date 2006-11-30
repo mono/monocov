@@ -1,4 +1,10 @@
 
+Thu Nov 30 17:36:43 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* gui/gtk/SourceWindow.cs: work around Gtk bug.
+	* coverage.c: disable domain unload for now and make sure
+	methods names are encoded correctly in the XML file.
+
 Thu Nov 30 12:15:03 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* Ship a Cecil binary in the source tarball. Added a
