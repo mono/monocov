@@ -5,11 +5,12 @@ VERSION=0.2
 help()
 {
 	echo ""
-	echo "Usage is: configure [--prefix=PREFIX]"
+	echo "Usage is: configure [--prefix=PREFIX] [--cecil=PATH_TO_CECIL_DLL]"
 	echo ""
 }
 
 prefix=/usr/local
+cecilbin=
 
 while [ $# -ne 0 ]; do
   case $1 in
@@ -26,6 +27,10 @@ while [ $# -ne 0 ]; do
 	prefix="$1"
 	shift
 	;;
+    --cecil=*)
+    	cecilbin=`echo $1 | sed 's/--cecil=//'`;
+	shift
+	;;
     *)
 	echo Unknown option: $1
 	help
@@ -33,15 +38,23 @@ while [ $# -ne 0 ]; do
   esac
 done
 
-cecilbin=`pkg-config --variable=Libraries mono-cecil`
-
-if test -z $cecilbin; then
-	echo "Cecil is not installed."
-	exit 1
+if test -z "$cecilbin"; then
+	cecilbin=`pkg-config --variable=Libraries mono-cecil`
 fi
 
-# copy Mono.Cecil here
-cp $cecilbin .
+if test -z "$cecilbin"; then
+	echo "Cecil is not installed."
+	if test -f Mono.Cecil.dll; then
+		echo "Using packaged Mono.Cecil.dll."
+	else
+		echo "No Mono.Cecil.dll found, use --cecil=/path/to/Mono.Cecil.dll option."
+		exit 1
+	fi
+else
+	# copy Mono.Cecil here
+	echo "Using Cecil from $cecilbin."
+	cp $cecilbin .
+fi
 
 echo "prefix=$prefix" > config.make
 echo "VERSION=$VERSION" >> config.make

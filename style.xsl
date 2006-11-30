@@ -71,14 +71,11 @@
             <xsl:with-param name="count" select="3"/>
           </xsl:call-template>
           <xsl:variable name="url">
-            <xsl:if test="name()='project'">
-              project<xsl:value-of select="$link-suffix"/>
+            <xsl:if test="name()='project'">project<xsl:value-of select="$link-suffix"/>
             </xsl:if>
-            <xsl:if test="name()='namespace'">
-              namespace-<xsl:value-of select="@name"/><xsl:value-of select="$link-suffix"/>
+            <xsl:if test="name()='namespace'">namespace-<xsl:value-of select="@name"/><xsl:value-of select="$link-suffix"/>
             </xsl:if>
-            <xsl:if test="name()='class'">
-              class-<xsl:value-of select="@fullname"/><xsl:value-of select="$link-suffix"/>
+            <xsl:if test="name()='class'">class-<xsl:value-of select="@fullname"/><xsl:value-of select="$link-suffix"/>
             </xsl:if>
           </xsl:variable>
           <xsl:if test="count(..|/)=1">

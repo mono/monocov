@@ -11,7 +11,9 @@ the program you want to gather coverage data from and a Gtk# user interface.
 ----------------
 
 Recent Mono and Gtk# releases. You also need Mono.Cecil installed
-or copied in the source dir and where the programs are run from..
+or copied in the source dir and where the programs are run from.
+The source release contains Mono.Cecil.dll and make install takes
+care of installing it properly.
 
 2. USAGE
 --------
@@ -64,11 +66,16 @@ To export the data as XML, run monocov like this:
 The generated XML files use a default stylesheet which is a bit ugly. It would
 be good if somebody could contribute a better one :)
 
+To export the data as HTML, run monocov like this:
+	monocov --export-html=<DEST DIR> <DATA FILE NAME>
+
 2.5 KNOWN BUGS
 --------------
 
 In the source code view (when double-clicking on an entry), the view is not
 scrolled to the first line of the method.
+The --debug option to mono should not be required and it should be enabled
+by default.
 
 3. UTILITY PROGRAMS
 -------------------
@@ -103,7 +110,7 @@ zlib/libpng.
 
 Zoltan Varga (vargaz@freemail.hu)
 Jacob Ilsø Christensen (jacobilsoe@gmail.com)
-or 
+or preferably
 the mono devel list (mono-devel-list@ximian.com)
 
 RANDOM NOTES:

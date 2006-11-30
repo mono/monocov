@@ -93,7 +93,7 @@ clean:
 	rm -f monocov.exe monocov.exe.mdb symbols.exe symbols.exe.mdb nunit-console.exe libmono-profiler-monocov.so
 
 distclean:
-	rm -f monocov Mono.Cecil.dll config.make Constants.cs
+	rm -f monocov config.make Constants.cs
 
 dist:
 	tar -chzf $(PROJECTNAME)-$(VERSION).tar.gz `cat MANIFEST` \

@@ -1,4 +1,10 @@
 
+Thu Nov 30 12:15:03 CET 2006 Paolo Molaro <lupus@ximian.com>
+
+	* Ship a Cecil binary in the source tarball. Added a
+	configure option to specify a Cecil binary.
+	* style.xsl: fixed mangling of hrefs.
+
 Mon Nov 27 13:47:24 CET 2006 Paolo Molaro <lupus@ximian.com>
 
 	* UI updates. Removed unused dependency on gnome-sharp.

@@ -25,3 +25,4 @@ symbols.cs
 nunit-console.cs
 coverage.c
 monocov.1
+Mono.Cecil.dll
