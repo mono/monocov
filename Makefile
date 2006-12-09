@@ -54,7 +54,7 @@ nunit-console.exe: nunit-console.cs
 	gmcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
 
 libmono-profiler-monocov.so: coverage.c
-	$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" `pkg-config --cflags glib-2.0` --shared -fPIC -o $@ $^
+	$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" `pkg-config --cflags mono` --shared -fPIC -o $@ $^
 
 install: all
 	mkdir -p $(prefix)/lib/monocov
