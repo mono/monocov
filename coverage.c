@@ -289,6 +289,7 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 
 	klass = mono_method_get_class (method);
 	classname = mono_type_get_name (mono_class_get_type (klass));
+	classname = g_markup_escape_text (classname, strlen (classname));
 	image = mono_class_get_image (klass);
 
 	tmpname = mono_method_get_name (method);

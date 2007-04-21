@@ -1,3 +1,6 @@
+2007-04-21  Zoltan Varga  <vargaz@gmail.com>
+
+	* coverage.c (output_method): Escape classname as well.
 
 Thu Nov 30 17:36:43 CET 2006 Paolo Molaro <lupus@ximian.com>
 
