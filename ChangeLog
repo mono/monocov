@@ -1,3 +1,9 @@
+2007-04-23  Zoltan Varga  <vargaz@gmail.com>
+
+	* coverage.c: Applied patch from 
+	Valentin Sawadski <valentin.sawadski@gmx.de>. Fix handling of generic
+	types.
+
 2007-04-21  Zoltan Varga  <vargaz@gmail.com>
 
 	* coverage.c (output_method): Escape classname as well.

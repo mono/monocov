@@ -31,6 +31,9 @@ struct _MonoProfiler {
 	FILE *outfile;
 };
 
+static char
+*parse_generic_type_names(char *string);
+
 static void
 add_filter (MonoProfiler *prof, const char *filter);
 
@@ -270,6 +273,47 @@ output_entry (MonoProfiler *prof, const MonoProfileCoverageEntry *entry)
 	prev_offset = entry->iloffset;
 }
 
+static char
+*parse_generic_type_names(char *name)
+{
+	char *new_name,*ret;
+	int within_generic_declaration=0, generic_members=1;
+	if( !(ret = new_name = calloc(strlen(name) * 4 + 1, sizeof(char))) )
+		return NULL;
+	
+	do
+	{
+		switch(*name)
+		{
+			case '<':
+				within_generic_declaration = 1;
+				break;
+			case '>':
+				within_generic_declaration = 0;
+				if( *(name-1) != '<')
+				{
+					*new_name++ = '`';
+					*new_name++ = '0' + generic_members;
+				}
+				else
+				{
+					memcpy(new_name,"&lt;&gt;",8);
+					new_name+=8;
+				}
+				generic_members = 0;
+				break;
+			case ',':
+				generic_members++;
+				break;
+			default:
+				if(!within_generic_declaration)
+					*new_name++ = *name;
+				break;
+		}
+	}while(*name++);
+	return ret;
+}
+
 static void
 output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 {
@@ -288,11 +332,10 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 	tmpsig = g_markup_escape_text (tmpsig, strlen (tmpsig));
 
 	klass = mono_method_get_class (method);
-	classname = mono_type_get_name (mono_class_get_type (klass));
-	classname = g_markup_escape_text (classname, strlen (classname));
+	classname = parse_generic_type_names (mono_type_get_name (mono_class_get_type (klass)));
 	image = mono_class_get_image (klass);
 
-	tmpname = mono_method_get_name (method);
+	tmpname = (char*)mono_method_get_name (method);
 	tmpname = g_markup_escape_text (tmpname, strlen (tmpname));
 
 	fprintf (outfile, "\t<method assembly=\"%s\" class=\"%s\" name=\"%s (%s)\" token=\"%d\">\n",
