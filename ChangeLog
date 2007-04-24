@@ -1,3 +1,9 @@
+2007-04-24  Zoltan Varga  <vargaz@gmail.com>
+
+	* gui/gtk/CoverageView.cs: Applied patch from
+	Valentin Sawadski <valentin.sawadski@gmx.de>. Add color coding to the
+	coverage tree.
+
 2007-04-23  Zoltan Varga  <vargaz@gmail.com>
 
 	* coverage.c: Applied patch from 

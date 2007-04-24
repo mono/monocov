@@ -107,7 +107,7 @@ public class CoverageView {
 	public static string[] DEFAULT_FILTERS = {
 		"-PrivateImplementationDetails"
 	};
-
+	
 	TreeView tree;
 	Hashtable namespaces;
 	Hashtable classes;
@@ -121,13 +121,14 @@ public class CoverageView {
 		tree = new TreeView (store);
 
 		CellRendererText renderer = new CellRendererText ();
+		CellRendererText coverageRenderer = new CellRendererText ();
 		// LAME: Why is this property a float instead of a double ?
 		renderer.Xalign = 0.5f;
 
 		tree.AppendColumn ("Classes", new CellRendererText (), "text", 0);
 		tree.AppendColumn ("Lines Hit", renderer, "text", 1);
 		tree.AppendColumn ("Lines Missed", renderer, "text", 2);
-		tree.AppendColumn ("Coverage", renderer, "text", 3);
+		tree.AppendColumn ("Coverage", coverageRenderer, "text", 3);
 
 		tree.GetColumn (0).Resizable = true;
 		tree.GetColumn (1).Alignment = 0.0f;
@@ -136,6 +137,7 @@ public class CoverageView {
 		tree.GetColumn (2).Resizable = true;
 		tree.GetColumn (3).Alignment = 0.0f;
 		tree.GetColumn (3).Resizable = true;
+		tree.GetColumn (3).SetCellDataFunc (coverageRenderer, new TreeCellDataFunc (RenderCoverage));
 
 		tree.HeadersVisible = true;
 
@@ -234,6 +236,21 @@ public class CoverageView {
 		}
 		return SourceView;
 
+	}
+
+	private void RenderCoverage (TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
+	{
+		string text = (string)model.GetValue (iter, 3);
+		int coverage = Int32.Parse(text.Substring(0, text.Length - 1));
+		
+		if(coverage > 99)
+			(cell as CellRendererText).Foreground = "darkgreen";
+		else if(coverage > 74)
+			(cell as CellRendererText).Foreground = "gold";
+		else if(coverage > 49)
+			(cell as CellRendererText).Foreground = "OrangeRed";
+		else
+			(cell as CellRendererText).Foreground = "FireBrick";
 	}
 
 	void OnDeleteEvent (object sender, DeleteEventArgs e)
