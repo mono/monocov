@@ -42,7 +42,7 @@ public class SymbolDumper
 			if (methodBase.Name.IndexOf (methodNamePattern) != -1) {
 				Console.WriteLine (methodBase.DeclaringType.FullName + ":" + methodBase.Name + " " + entry);
 
-				foreach (LineNumberEntry line in entry.LineNumbers)
+				foreach (LineNumberEntry line in entry.GetLineNumberTable ().LineNumbers)
 					Console.WriteLine ("\t" + line);
 			}					
 		}

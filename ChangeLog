@@ -1,3 +1,8 @@
+2008-07-15  Sandy Armstrong  <sanfordarmstrong@gmail.com>
+
+	* CoverageModel.cs, symbols.cs: Update to build against latest code
+	in Mono.CompilerServices.SymbolWriter.
+
 2007-04-24  Zoltan Varga  <vargaz@gmail.com>
 
 	* gui/gtk/CoverageView.cs: Applied patch from

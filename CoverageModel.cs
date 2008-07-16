@@ -552,7 +552,7 @@ public class CoverageModel : CoverageItem {
 			// Compiler generated, abstract method etc.
 			return;
 
-		LineNumberEntry[] lines = entry.LineNumbers;
+		LineNumberEntry[] lines = entry.GetLineNumberTable ().LineNumbers;
 
 		if (lines.Length == 0)
 			return;
@@ -574,7 +574,7 @@ public class CoverageModel : CoverageItem {
 
 
 		if (klass.sourceFile == null) {
-			string sourceFile = entry.SourceFile.FileName;
+			string sourceFile = entry.CompileUnit.SourceFile.FileName;
 
 			SourceFileCoverageData source = (SourceFileCoverageData)sources [sourceFile];
 			if (source == null) {
