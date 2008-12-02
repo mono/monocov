@@ -336,7 +336,6 @@ public class CoverageView {
 		XmlExporter exporter = new XmlExporter ();
 		exporter.DestinationDir = destDir;
 		exporter.Export (model);
-		Environment.Exit (1);
 	}
 
 }

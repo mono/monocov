@@ -24,7 +24,6 @@ namespace MonoCov.Gui.Gtk {
 public class MonoCovGui {
 
 	private static string CAPTION = "MonoCov " + Constants.Version;
-	private FileSelection openDialog;
 	private CoverageView coverageView;
 
 	Glade.XML xml;
@@ -71,15 +70,17 @@ public class MonoCovGui {
 
 	public void OnAbout (object o, EventArgs args)
 	{
-		MessageDialog dialog;
+		AboutDialog dialog = new AboutDialog ();
 
-		dialog = new MessageDialog (main, DialogFlags.Modal, MessageType.Info,
-					    ButtonsType.Ok,
-					    "A Coverage Analysis program for MONO.\n" +
-					    "By Zoltan Varga (vargaz@gmail.com)\n" +
-					    "Powered by\n" +
-					    "MONO (http://www.go-mono.com)\n" + 
-					    "and Gtk# (http://gtk-sharp.sourceforge.net)");
+		dialog.ProgramName = CAPTION;
+
+		dialog.Authors = new string[] {
+			"Zoltan Varga (vargaz@gmail.com)"
+		};
+
+		dialog.Copyright = "Copyright © 2008 Novell, Inc. and Others";
+		dialog.Comments = "A Coverage Analysis program for MONO.";
+
 		dialog.Run ();
 		dialog.Destroy ();
 	}
@@ -88,6 +89,10 @@ public class MonoCovGui {
 	{
 		//		if (coverageView != null)
 		//			coverageView.Close (true);
+
+		if (coverageView != null) {
+			scrolledwindow1.Remove (coverageView.Widget);
+		}
 
 		progressbar1.Show ();
 		coverageView = new CoverageView (fileName, progressbar1);
@@ -107,6 +112,7 @@ public class MonoCovGui {
 	private void ExportAsXml (string destDir)
 	{
 		coverageView.ExportAsXml (destDir);
+		Environment.Exit (1);
 	}
 	
 	public void delete_cb (object o, DeleteEventArgs args)
@@ -119,19 +125,21 @@ public class MonoCovGui {
 	public void OnOpen (object o, EventArgs args)
 	{
 		string fileName = null;
-		FileSelection dialog = 
-			new FileSelection ("Choose a file");
+		FileChooserDialog dialog =
+			new FileChooserDialog ("Choose a file",
+			                       main,
+			                       FileChooserAction.Open,
+					       Stock.Cancel, ResponseType.Cancel,
+					       Stock.Ok, ResponseType.Ok);
 
-
-		dialog.HideFileopButtons ();
-
-		// TODO: How to set a filter ???
-		// close, but not usable
-		// dialog.Complete ("*.cov");
+		FileFilter filter = new FileFilter ();
+		filter.AddPattern ("*.cov");
+		dialog.AddFilter (filter);
 
 		if (dialog.Run () == (int) ResponseType.Ok) {
 			fileName = dialog.Filename;
 		}
+
 		dialog.Destroy ();
 
 		if (fileName != null) {

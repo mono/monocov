@@ -1,3 +1,8 @@
+2008-12-02  Peter Johanson  <peter@peterjohanson.com>
+
+	* gui/gtk/CoverageView.cs:
+	* gui/gtk/MonoCov.cs: small enhancements to the gtk# UI.
+
 2008-07-15  Sandy Armstrong  <sanfordarmstrong@gmail.com>
 
 	* CoverageModel.cs, symbols.cs: Update to build against latest code
