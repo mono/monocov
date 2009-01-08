@@ -1,3 +1,7 @@
+2009-01-08  Zoltan Varga  <vargaz@gmail.com>
+
+	* README: Add a status section.
+
 2008-12-02  Peter Johanson  <peter@peterjohanson.com>
 
 	* gui/gtk/CoverageView.cs:
