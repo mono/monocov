@@ -95,18 +95,33 @@ public class MonoCovGui {
 		}
 
 		progressbar1.Show ();
-		coverageView = new CoverageView (fileName, progressbar1);
 
-		main.Title = (CAPTION + " - " + new FileInfo (fileName).Name);
+		try {
+			coverageView = new CoverageView (fileName, progressbar1);
 
-		scrolledwindow1.Add (coverageView.Widget);
+			main.Title = (CAPTION + " - " + new FileInfo (fileName).Name);
 
-		main.ShowAll ();
-		// allow some time for user feedback
-		GLib.Timeout.Add (1000, delegate {
+			scrolledwindow1.Add (coverageView.Widget);
+
+			main.ShowAll ();
+			// allow some time for user feedback
+			GLib.Timeout.Add (1000, delegate {
+				progressbar1.Hide ();
+				return false;
+			});
+		} catch (Exception e) {
+			if (coverageView != null)
+				scrolledwindow1.Remove (coverageView.Widget);
+				
+			coverageView = null;
 			progressbar1.Hide ();
-			return false;
-		});
+			main.Title = CAPTION;
+				
+			MessageDialog messageDialog = new MessageDialog (main, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, e.Message);
+			messageDialog.Title = "Error";
+			messageDialog.Run ();
+			messageDialog.Destroy ();
+		}
 	}
 
 	private void ExportAsXml (string destDir)
