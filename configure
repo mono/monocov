@@ -66,8 +66,8 @@ if test -z "$monooptionssrc"; then
 	exit 1
 else
 	#copy Mono.Options here
-        echo "Using Mono.Options: $monooptionssrc."
-        cp $monooptionssrc .
+	echo "Using Mono.Options: $monooptionssrc."
+	cp $monooptionssrc .
 fi
 
 echo "prefix=$prefix" > config.make
