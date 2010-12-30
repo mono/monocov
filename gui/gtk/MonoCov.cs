@@ -17,7 +17,6 @@ using System;
 using System.Reflection;
 using System.IO;
 using System.Drawing;
-using Mono.GetOptions;
 
 namespace MonoCov.Gui.Gtk {
 

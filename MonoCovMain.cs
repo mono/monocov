@@ -18,7 +18,6 @@ using System;
 using System.Reflection;
 using System.IO;
 using System.Text;
-using Mono.GetOptions;
 #if GUI_qt
 using MonoCov.Gui.Qt;
 #else
@@ -28,32 +27,9 @@ using MonoCov.Gui.Gtk;
 [assembly: AssemblyTitle("monocov")]
 [assembly: AssemblyDescription("A Coverage Analysis program for .NET")]
 [assembly: AssemblyCopyright("Copyright (C) 2003 Zoltan Varga")]
-[assembly: Mono.Author("Zoltan Varga (vargaz@freemail.hu)")]
 [assembly: AssemblyVersion(Constants.Version)]
-[assembly: Mono.UsageComplement("[<datafile>]")]
-[assembly: Mono.About("")]
 
 namespace MonoCov {
-
-public class MonoCovOptions : Options
-{
-	[Option("Export coverage data as XML into directory PARAM", "export-xml")]
-		public string exportXmlDir;
-
-	[Option("Export coverage data as HTML into directory PARAM", "export-html")]
-		public string exportHtmlDir;
-
-	[Option("Use the XSL stylesheet PARAM for XML->HTML conversion", "stylesheet")]
-		public string styleSheet;
-
-	[Option("No progress messages during the export process", "no-progress")]
-		public bool quiet = false;
-
-	public override WhatToDoNext DoAbout() {
-		base.DoAbout ();
-		return WhatToDoNext.AbandonProgram;
-	}
-}
 
 //
 // This class should be named MonoCov, but the GUI class is already
@@ -62,10 +38,15 @@ public class MonoCovOptions : Options
 
 public class MonoCovMain {
 
-	public static int Main (String[] args) {
+	public static int Main (string[] args) {
 		MonoCovOptions options = new MonoCovOptions ();
 		options.ProcessArgs (args);
 		args = options.RemainingArguments;
+
+		if (options.showHelp) {
+			options.WriteHelp(Console.Out);
+			return 0;
+		}
 
 		if (options.exportXmlDir != null)
 			return handleExportXml (options, args);
