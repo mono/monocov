@@ -11,7 +11,6 @@ using System;
 using System.Reflection;
 using System.IO;
 using System.Text;
-using Mono.GetOptions;
 
 [assembly: AssemblyTitle("monocov")]
 [assembly: AssemblyDescription("A Coverage Analysis program for .NET")]

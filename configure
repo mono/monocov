@@ -11,6 +11,7 @@ help()
 
 prefix=/usr/local
 cecilbin=
+monooptionssrc=
 
 while [ $# -ne 0 ]; do
   case $1 in
@@ -54,6 +55,19 @@ else
 	# copy Mono.Cecil here
 	echo "Using Cecil from $cecilbin."
 	cp $cecilbin .
+fi
+
+if test -z "$monooptionssrc"; then
+	monooptionssrc=`pkg-config --variable=Sources mono-options`
+fi
+
+if test -z "$monooptionssrc"; then
+	echo "No Mono.Options found."
+	exit 1
+else
+	#copy Mono.Options here
+        echo "Using Mono.Options: $monooptionssrc."
+        cp $monooptionssrc .
 fi
 
 echo "prefix=$prefix" > config.make
