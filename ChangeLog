@@ -1,3 +1,8 @@
+yyyy-mm-dd  Andreas Windischer
+
+	* HtmlExporter.cs: Never used private fields removed.
+	* gui/gtk/CoverageView.cs: Never used private field removed.
+
 2010-12-30  Andreas Windischer
 
 	* MonoCovMain.cs, MonoCovOptions.cs, gui/gtk/MonoCov.cs, gui/qt/MonoCov.cs, gui/gtk/MonoCov.cs, Makefile, configure:
