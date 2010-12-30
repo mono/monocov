@@ -2,6 +2,7 @@ yyyy-mm-dd  Andreas Windischer
 
 	* HtmlExporter.cs: Never used private fields removed.
 	* gui/gtk/CoverageView.cs: Never used private field removed.
+	* MonoConvMain.cs: xml/html-export error handling added.
 
 2010-12-30  Andreas Windischer
 

@@ -70,7 +70,13 @@ public class MonoCovMain {
 			Console.WriteLine ("Error: Datafile name is required when using --export-xml");
 			return 1;
 		}
-
+		
+		if (!File.Exists(args [0]))
+		{
+			Console.WriteLine(string.Format("Error: Datafile '{0}' not found.", args [0]));
+			return 1;
+		}
+			
 		if (!Directory.Exists (opts.exportXmlDir)) {
 			try {
 				Directory.CreateDirectory (opts.exportXmlDir);
@@ -80,15 +86,22 @@ public class MonoCovMain {
 				return 1;
 			}
 		}
-		
-		CoverageModel model = new CoverageModel ();
-		model.ReadFromFile (args [0]);
-		XmlExporter exporter = new XmlExporter ();
-		exporter.DestinationDir = opts.exportXmlDir;
-		exporter.StyleSheet = opts.styleSheet;
-		if (!opts.quiet)
-			exporter.Progress += new XmlExporter.ProgressEventHandler (progressListener);
-		exporter.Export (model);
+			
+		try {
+			CoverageModel model = new CoverageModel ();
+			model.ReadFromFile (args [0]);
+			XmlExporter exporter = new XmlExporter ();
+			exporter.DestinationDir = opts.exportXmlDir;
+			exporter.StyleSheet = opts.styleSheet;
+			if (!opts.quiet)
+				exporter.Progress += new XmlExporter.ProgressEventHandler (progressListener);
+			exporter.Export (model);
+		}
+		catch (Exception e) {
+			Console.WriteLine("Error: "+e.Message);
+			return 1;
+		}
+			
 		if (!opts.quiet) {
 			Console.WriteLine ();
 			Console.WriteLine ("Done.");
@@ -105,7 +118,12 @@ public class MonoCovMain {
 			Console.WriteLine ("Error: Datafile name is required when using --export-html");
 			return 1;
 		}
-
+		
+		if (!File.Exists(args [0])) {
+			Console.WriteLine(string.Format("Error: Datafile '{0}' not found.", args [0]));
+			return 1;
+		}
+			
 		if (!Directory.Exists (opts.exportHtmlDir)) {
 			try {
 				Directory.CreateDirectory (opts.exportHtmlDir);
@@ -116,14 +134,21 @@ public class MonoCovMain {
 			}
 		}
 		
-		CoverageModel model = new CoverageModel ();
-		model.ReadFromFile (args [0]);
-		HtmlExporter exporter = new HtmlExporter ();
-		exporter.DestinationDir = opts.exportHtmlDir;
-		exporter.StyleSheet = opts.styleSheet;
-		if (!opts.quiet)
-			exporter.Progress += new HtmlExporter.ProgressEventHandler (htmlProgressListener);
-		exporter.Export (model);
+		try {
+			CoverageModel model = new CoverageModel ();
+			model.ReadFromFile (args [0]);
+			HtmlExporter exporter = new HtmlExporter ();
+			exporter.DestinationDir = opts.exportHtmlDir;
+			exporter.StyleSheet = opts.styleSheet;
+			if (!opts.quiet)
+				exporter.Progress += new HtmlExporter.ProgressEventHandler (htmlProgressListener);
+			exporter.Export (model);
+		}
+		catch (Exception e) {
+			Console.WriteLine("Error: "+e.Message);
+			return 1;
+		}
+				
 		if (!opts.quiet) {
 			Console.WriteLine ();
 			Console.WriteLine ("Done.");
