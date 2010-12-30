@@ -110,7 +110,6 @@ public class CoverageView {
 	
 	TreeView tree;
 	Hashtable namespaces;
-	Hashtable classes;
 	CoverageModel model;
 	Hashtable source_views, window_maps;
 	ProgressBar status;

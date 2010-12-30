@@ -39,16 +39,6 @@ public class HtmlExporter {
 
 	public event ProgressEventHandler Progress;
 
-	private XmlTextWriter writer;
-
-	private CoverageModel model;
-
-	private static string DefaultStyleSheet = "style.xsl";
-
-	private int itemCount;
-
-	private int itemsProcessed;
-
 	private XslTransform transform;
 
 	//
@@ -57,9 +47,6 @@ public class HtmlExporter {
 	//
  
 	public void Export (CoverageModel model) {
-
-		this.model = model;
-
 		if (model.hit + model.missed == 0)
 			return;
 
@@ -79,9 +66,6 @@ public class HtmlExporter {
 		exporter.StyleSheet = StyleSheet;
 		exporter.DestinationDir = tempDir;
 		exporter.Progress += new XmlExporter.ProgressEventHandler (progressListener);
-		// Count items
-		itemCount = 1 + model.Classes.Count + model.Namespaces.Count;
-		itemsProcessed = 0;
 
 		exporter.Export (model);
 
