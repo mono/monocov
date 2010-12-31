@@ -3,9 +3,6 @@
 	* HtmlExporter.cs: Never used private fields removed.
 	* gui/gtk/CoverageView.cs: Never used private field removed.
 	* MonoConvMain.cs: xml/html-export error handling added.
-
-2010-12-30  Andreas Windischer
-
 	* MonoCovMain.cs, MonoCovOptions.cs, gui/gtk/MonoCov.cs, gui/qt/MonoCov.cs, gui/gtk/MonoCov.cs, Makefile, configure:
 	Migrate from Mono.GetOptions (obsolete) to Mono.Options
 
