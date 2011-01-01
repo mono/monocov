@@ -1,3 +1,8 @@
+2011-01-02  Andreas Windischer
+
+	* gui/gtk/CoverageView.cs: Create the method nodes only when
+	the class item is opened
+
 2010-12-30  Andreas Windischer
 
 	* HtmlExporter.cs: Never used private fields removed.

@@ -109,6 +109,7 @@ public class CoverageView {
 	};
 	
 	TreeView tree;
+	TreeStore store;
 	Hashtable namespaces;
 	CoverageModel model;
 	Hashtable source_views, window_maps;
@@ -116,7 +117,7 @@ public class CoverageView {
 	
 	public CoverageView (string fileName, ProgressBar status)
 	{
-		TreeStore store = new TreeStore (typeof (string), typeof (string), typeof (string), typeof (string), typeof (object));
+		store = new TreeStore (typeof (string), typeof (string), typeof (string), typeof (string), typeof (object));
 		tree = new TreeView (store);
 
 		CellRendererText renderer = new CellRendererText ();
@@ -176,18 +177,9 @@ public class CoverageView {
 
 			ClassItem classItem = new ClassItem (store, nsItem, klass, klass.name);
 
-			// We should create the method nodes only when the class item
-			// is opened
-			
-			foreach (MethodCoverageItem method in klass.Methods) {
-				if (method.filtered)
-					continue;
-
-				string title = method.Name;
-				if (title.Length > 64)
-					title = title.Substring (0, 63) + "...)";
-
-				new MethodItem (store, classItem, classItem, method, title);
+			if (klass.ChildCount != 0) {
+				TreeIter treeIter = store.AppendNode (classItem.iter);
+				store.SetValues (treeIter, "<loading>");
 			}
 		}
 
@@ -197,6 +189,8 @@ public class CoverageView {
 		//foreach (string ns in namespaces.Keys)
 		//	tree.ExpandRow (store.GetPath (((TreeItem)namespaces [ns]).Iter), false);
 
+		tree.RowExpanded += new RowExpandedHandler (OnRowExpanded);
+		tree.RowCollapsed += new RowCollapsedHandler (OnRowCollapsed);
 		tree.ButtonPressEvent += new ButtonPressEventHandler (OnButtonPress);
 		tree.Selection.Mode = SelectionMode.Single;
 
@@ -306,6 +300,47 @@ public class CoverageView {
 		}
 	}
 	*/
+
+	private void OnRowExpanded (object sender, RowExpandedArgs args)
+	{
+		ClassItem classItem = store.GetValue (args.Iter, 4) as ClassItem;
+		if (classItem == null)
+			return;
+
+		foreach (MethodCoverageItem method in classItem.Model.Methods) {
+			if (method.filtered)
+				continue;
+
+			string title = method.Name;
+			if (title.Length > 64)
+				title = title.Substring (0, 63) + "...)";
+
+			new MethodItem (store, classItem, classItem, method, title);
+		}
+
+		TreeIter treeIter = classItem.iter;
+		store.IterChildren (out treeIter, treeIter);
+
+		while (store.IterIsValid (treeIter)) {
+			if (store.GetValue (treeIter, 4) is MethodItem)
+				store.IterNext (ref treeIter);
+			else
+				store.Remove (ref treeIter);
+		}
+	}
+
+	private void OnRowCollapsed (object sender, RowCollapsedArgs args)
+	{
+		if (!(store.GetValue (args.Iter, 4) is ClassItem))
+			return;
+
+		TreeIter treeIter = store.InsertNode (args.Iter, 0);
+		store.SetValues (treeIter, "<loading>");
+		store.IterNext (ref treeIter);
+
+		while (store.IterIsValid (treeIter))
+			store.Remove (ref treeIter);
+	}
 
 	public Widget Widget {
 		get {
