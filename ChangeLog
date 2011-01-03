@@ -1,3 +1,8 @@
+2011-01-03  Andreas Windischer
+
+	* gui/gtk/monocov.glade, gui/gtk/SourceWindow.cs, gui/gtk/MonoCov.cs, gui/gtk/CoverageView.cs:
+	Create new source tab in notebook instead of new source window.
+
 2011-01-02  Andreas Windischer
 
 	* gui/gtk/CoverageView.cs: Create the method nodes only when

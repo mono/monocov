@@ -112,7 +112,6 @@ public class CoverageView {
 	TreeStore store;
 	Hashtable namespaces;
 	CoverageModel model;
-	Hashtable source_views, window_maps;
 	ProgressBar status;
 	
 	public CoverageView (string fileName, ProgressBar status)
@@ -194,8 +193,6 @@ public class CoverageView {
 		tree.ButtonPressEvent += new ButtonPressEventHandler (OnButtonPress);
 		tree.Selection.Mode = SelectionMode.Single;
 
-		source_views = new Hashtable ();
-		window_maps = new Hashtable ();
 		Progress ("Done", 1.0);
 		// LAME: Why doesn't widgets visible by default ???
 		tree.Show ();
@@ -215,20 +212,27 @@ public class CoverageView {
 			OnDoubleClick ();
 	}
 
-	SourceWindow ShowSourceFor (ClassItem item)
+	public class ShowSourceEventArgs : EventArgs
 	{
-		SourceWindow SourceView = (SourceWindow)source_views [item.Model.sourceFile];
-		if (SourceView != null) {
-			SourceView.Show ();
-		} else {
-			SourceView = new SourceWindow (item);
-			source_views [item.Model.sourceFile] = SourceView;
-			window_maps [SourceView] = item.Model.sourceFile;
-			SourceView.Show ();
-			SourceView.DeleteEvent += new DeleteEventHandler (OnDeleteEvent);
-		}
-		return SourceView;
+		public MethodItem methodItem;
+	}
 
+	public delegate void ShowSourceEventHandler (object sender, ShowSourceEventArgs e);
+
+	public event ShowSourceEventHandler ShowSource;
+
+	protected virtual void OnShowSource (ShowSourceEventArgs e)
+	{
+		if (ShowSource != null)
+			ShowSource (this, e);
+	}
+
+	protected virtual void OnShowSource (MethodItem methodItem)
+	{
+		ShowSourceEventArgs e = new ShowSourceEventArgs ();
+		e.methodItem = methodItem;
+
+		OnShowSource (e);
 	}
 
 	private void RenderCoverage (TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
@@ -248,10 +252,6 @@ public class CoverageView {
 
 	void OnDeleteEvent (object sender, DeleteEventArgs e)
 	{
-		if (window_maps [sender] != null){
-			source_views [window_maps [sender]] = null;
-			window_maps [sender] = null;
-		}
 	}
 	
 	void OnDoubleClick ()
@@ -267,9 +267,7 @@ public class CoverageView {
 		object item = value.Val;
 
 		if (item is MethodItem){
-                        MethodItem method = (MethodItem)item;
-                        SourceWindow sourceView = ShowSourceFor (method.ParentClass);
-                        sourceView.CenterOnMethod (method);
+			OnShowSource (item as MethodItem);
 		} else {
 			if (tree.ExpandRow (model.GetPath (iter), true)) {
 				// LAME: This seems to collapse the entire tree...

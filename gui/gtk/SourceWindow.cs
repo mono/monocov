@@ -4,25 +4,21 @@ using System.IO;
 
 namespace MonoCov.Gui.Gtk{
 
-	public class SourceWindow : Window {
+	public class SourceWindow : ScrolledWindow {
 		TextView text_view;
 		TextBuffer text_buffer;
 		TextTag hit_color;
 		TextTag missed_color;
+		public CoverageView.ClassItem classItem;
 		
 		public SourceWindow (CoverageView.ClassItem klass)
-			: base (klass.Model.sourceFile.sourceFile)
 		{
-			SetDefaultSize (800, 600);
-
-			ScrolledWindow sw = new ScrolledWindow ();
-			
+			this.classItem=klass;
 			text_buffer = new TextBuffer (new TextTagTable ());
 			text_view = new TextView (text_buffer);
 			text_view.Editable = false;
 
-			sw.Add (text_view);
-			Add (sw);
+			Add (text_view);
 
 			hit_color = new TextTag ("hit");
 			hit_color.Foreground = "blue";

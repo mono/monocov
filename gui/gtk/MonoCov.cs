@@ -29,6 +29,8 @@ public class MonoCovGui {
 
 	[Glade.Widget] Window main;
 	[Glade.Widget] ScrolledWindow scrolledwindow1;
+	[Glade.Widget] VPaned vpaned1;
+	[Glade.Widget] Notebook notebook1;
 	[Glade.Widget] ProgressBar progressbar1;
 	
 	public static int GuiMain (String[] args)
@@ -55,6 +57,7 @@ public class MonoCovGui {
 		xml.Autoconnect (this);
 
 		main.Title = CAPTION;
+		vpaned1.Position = (int)(vpaned1.Allocation.Height / 3);
 	}
 
 	public void OnQuit (object o, EventArgs args)
@@ -91,12 +94,17 @@ public class MonoCovGui {
 
 		if (coverageView != null) {
 			scrolledwindow1.Remove (coverageView.Widget);
+			coverageView.ShowSource -= OnShowSource;
+
+			while (notebook1.NPages != 0)
+				notebook1.RemovePage (0);
 		}
 
 		progressbar1.Show ();
 
 		try {
 			coverageView = new CoverageView (fileName, progressbar1);
+			coverageView.ShowSource += OnShowSource;
 
 			main.Title = (CAPTION + " - " + new FileInfo (fileName).Name);
 
@@ -109,8 +117,10 @@ public class MonoCovGui {
 				return false;
 			});
 		} catch (Exception e) {
-			if (coverageView != null)
+			if (coverageView != null) {
 				scrolledwindow1.Remove (coverageView.Widget);
+				coverageView.ShowSource -= OnShowSource;
+			}
 				
 			coverageView = null;
 			progressbar1.Hide ();
@@ -121,6 +131,31 @@ public class MonoCovGui {
 			messageDialog.Run ();
 			messageDialog.Destroy ();
 		}
+	}
+
+	private void OnShowSource (object sender, CoverageView.ShowSourceEventArgs e)
+	{
+		foreach (Widget widget in notebook1.Children) {
+			SourceWindow notebookSourceWindow = widget as SourceWindow;
+			if (notebookSourceWindow == null)
+				continue;
+
+			if (notebookSourceWindow.classItem.Model.sourceFile.sourceFile != e.methodItem.ParentClass.Model.sourceFile.sourceFile)
+				continue;
+
+			notebook1.CurrentPage = notebook1.PageNum (notebookSourceWindow);
+			notebookSourceWindow.CenterOnMethod (e.methodItem);
+			return;
+		}
+
+		SourceWindow sourceWindow = new SourceWindow (e.methodItem.ParentClass);
+		sourceWindow.CenterOnMethod (e.methodItem);
+
+		string sourceFile = e.methodItem.ParentClass.Model.sourceFile.sourceFile;
+		sourceFile = Path.GetFileName (sourceFile);
+
+		int index = notebook1.AppendPage (sourceWindow, new Label (sourceFile));
+		notebook1.CurrentPage = index;
 	}
 
 	private void ExportAsXml (string destDir)
@@ -159,6 +194,14 @@ public class MonoCovGui {
 		if (fileName != null) {
 			OpenFile (fileName);
 		}
+	}
+
+	public void OnCloseTab (object o, EventArgs args)
+	{
+		if (notebook1 == null || notebook1.NPages == 0)
+			return;
+
+		notebook1.RemovePage (notebook1.CurrentPage);
 	}
 }
 }
