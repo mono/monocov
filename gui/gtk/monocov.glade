@@ -60,16 +60,54 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="closetab1">
+		    <widget class="GtkImageMenuItem" id="quit1">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">_Close Tab</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="OnQuit" last_modification_time="Thu, 29 May 2003 13:54:37 GMT"/>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkMenuItem" id="menuitem8">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">_Window</property>
+	      <property name="use_underline">True</property>
+	      <child>
+		<widget class="GtkMenu" id="menuitem8_menu">
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="nexttab1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Next Tab</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="OnCloseTab" />
-		      <accelerator key="w" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+		      <signal name="activate" handler="OnNextTab" />
+		      <accelerator key="Page_Down" signal="activate" modifiers="GDK_CONTROL_MASK" />
 		      <child internal-child="image">
 			<widget class="GtkImage" id="image1">
 			  <property name="visible">True</property>
-			  <property name="stock">gtk-close</property>
+			  <property name="stock">gtk-go-forward</property>
+			  <property name="icon-size">1</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="previoustab1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Previous Tab</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="OnPreviousTab" />
+		      <accelerator key="Page_Up" signal="activate" modifiers="GDK_CONTROL_MASK" />
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image1">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-go-back</property>
 			  <property name="icon-size">1</property>
 			</widget>
 		      </child>
@@ -83,11 +121,29 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="quit1">
+		    <widget class="GtkImageMenuItem" id="closetab1">
 		      <property name="visible">True</property>
-		      <property name="label">gtk-quit</property>
-		      <property name="use_stock">True</property>
-		      <signal name="activate" handler="OnQuit" last_modification_time="Thu, 29 May 2003 13:54:37 GMT"/>
+		      <property name="label" translatable="yes">_Close Current Tab</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="OnCloseTab" />
+		      <accelerator key="w" signal="activate" modifiers="GDK_CONTROL_MASK" />
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image1">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-close</property>
+			  <property name="icon-size">1</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="closealltabs1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Close All Tabs</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="OnCloseAllTabs" />
+		      <accelerator key="w" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK" />
 		    </widget>
 		  </child>
 		</widget>
@@ -140,11 +196,6 @@
 		<placeholder/>
 	      </child>
 	    </widget>
-	    <packing>
-	      <property name="padding">2</property>
-	      <property name="expand">True</property>
-	      <property name="fill">True</property>
-	    </packing>
           </child>
 
 	  <child>

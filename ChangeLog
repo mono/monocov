@@ -1,3 +1,8 @@
+2011-01-04  Andreas Windischer
+
+	* gui/gtk/NotebookTabLabel.cs, gui/gtk/monocov.glade, gui/gtk/MonoCov.cs, Makefile:
+	Window menu item and tab close button added.
+
 2011-01-03  Andreas Windischer
 
 	* gui/gtk/monocov.glade, gui/gtk/SourceWindow.cs, gui/gtk/MonoCov.cs, gui/gtk/CoverageView.cs:

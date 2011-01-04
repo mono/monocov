@@ -96,8 +96,7 @@ public class MonoCovGui {
 			scrolledwindow1.Remove (coverageView.Widget);
 			coverageView.ShowSource -= OnShowSource;
 
-			while (notebook1.NPages != 0)
-				notebook1.RemovePage (0);
+			OnCloseAllTabs (this, EventArgs.Empty);
 		}
 
 		progressbar1.Show ();
@@ -154,8 +153,13 @@ public class MonoCovGui {
 		string sourceFile = e.methodItem.ParentClass.Model.sourceFile.sourceFile;
 		sourceFile = Path.GetFileName (sourceFile);
 
-		int index = notebook1.AppendPage (sourceWindow, new Label (sourceFile));
+		NotebookTabLabel notebookTabLabel = new NotebookTabLabel (sourceFile);
+		int index = notebook1.AppendPage (sourceWindow, notebookTabLabel);
 		notebook1.CurrentPage = index;
+		notebookTabLabel.CloseClicked += delegate(object obj, EventArgs eventArgs) {
+			notebook1.CurrentPage = notebook1.PageNum (sourceWindow);
+			OnCloseTab (this, EventArgs.Empty);
+		};
 	}
 
 	private void ExportAsXml (string destDir)
@@ -202,6 +206,31 @@ public class MonoCovGui {
 			return;
 
 		notebook1.RemovePage (notebook1.CurrentPage);
+	}
+
+	public void OnCloseAllTabs (object o, EventArgs args)
+	{
+		if (notebook1 == null)
+			return;
+		
+		while (notebook1.NPages != 0)
+			OnCloseTab (this, EventArgs.Empty);
+	}
+
+	public void OnNextTab (object o, EventArgs args)
+	{
+		if (notebook1 == null || notebook1.NPages == 0)
+			return;
+		
+		notebook1.NextPage ();
+	}
+
+	public void OnPreviousTab (object o, EventArgs args)
+	{
+		if (notebook1 == null || notebook1.NPages == 0)
+			return;
+		
+		notebook1.PrevPage ();
 	}
 }
 }
