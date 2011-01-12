@@ -77,7 +77,7 @@ To export the data as HTML, run monocov like this:
 You can use this application to track your code coverage as part of your build
 process. To specify a minimum methode coverage of 50% and a minimum class coverage
 of 80%:
-	monocov --minClassCoverage=0.5 minMethodeCoverage=0.8 <DATA FILE NAME>
+	monocov --minMethodeCoverage=0.5 --minClassCoverage=0.8 <DATA FILE NAME>
 
 The application will return an exit code which can be used to determine if all
 classes/methodes have a greater code coverage than specified.
