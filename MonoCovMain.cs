@@ -54,6 +54,9 @@ public class MonoCovMain {
 		if (options.exportHtmlDir != null)
 			return handleExportHtml (options, args);
 
+		if (options.minClassCoverage > 0 || options.minMethodeCoverage > 0)
+			return handleTestCoverage (options, args);
+
 		#if GUI_qt
 		return MonoCov.Gui.Qt.MonoCov.GuiMain (args);
 		#else
@@ -153,6 +156,49 @@ public class MonoCovMain {
 			Console.WriteLine ();
 			Console.WriteLine ("Done.");
 		}
+		return 0;
+	}
+
+	private static int handleTestCoverage (MonoCovOptions opts, string[] args)
+	{
+		if (args.Length == 0) {
+			Console.WriteLine ("Error: Datafile name is required when using --minClassCoverage or --minMethodeCoverage.");
+			return 1;
+		}
+
+		CoverageModel model = new CoverageModel ();
+
+		try {
+			model.ReadFromFile (args[0]);
+		} catch (Exception e) {
+			Console.WriteLine ("Error: " + e.Message);
+			return 1;
+		}
+
+		foreach (ClassCoverageItem classItem in model.Classes.Values) {
+			if (!opts.quiet)
+				Console.WriteLine (String.Format ("Coverage of class \"{0}\": {1:0.}%", classItem.FullName, classItem.coveragePercent * 100));
+
+			if (opts.minClassCoverage > 0 && classItem.coveragePercent < opts.minClassCoverage) {
+				if (!opts.quiet)
+					Console.WriteLine ("Test failed.");
+
+				return 1;
+			}
+
+			foreach (MethodCoverageItem methodItem in classItem.Methods) {
+				if (!opts.quiet)
+					Console.WriteLine (String.Format ("\tCoverage of method \"{0}\": {1:0.}%", methodItem.Name, methodItem.coveragePercent * 100));
+
+				if (opts.minMethodeCoverage > 0 && methodItem.coveragePercent < opts.minMethodeCoverage) {
+					if (!opts.quiet)
+						Console.WriteLine ("Test failed.");
+
+					return 1;
+				}
+			}
+		}
+
 		return 0;
 	}
 }

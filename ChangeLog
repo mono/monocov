@@ -1,3 +1,9 @@
+2011-01-12  Andreas Windischer
+
+	* MonoCovMain.cs, MonoCovOptions.cs, monocov.1, README:
+	The application will return an exit code which can be used to determine if all
+	classes/methodes have a greater code coverage than specified.
+
 2011-01-02  Andreas Windischer
 
 	* gui/gtk/CoverageView.cs: Create the method nodes only when
