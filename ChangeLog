@@ -1,6 +1,7 @@
 2011-01-15  Andreas Windischer
 
 	* gui/gtk/CoverageView.cs: Expand on double click fix.
+	* CoverageModel.cs: If assembly could not be found, search in datafile-directory.
 
 2011-01-12  Andreas Windischer
 
