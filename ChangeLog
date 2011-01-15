@@ -1,6 +1,6 @@
 2011-01-15  Andreas Windischer
 
-        * gui/gtk/CoverageView.cs: Expand on double click fix.
+	* gui/gtk/CoverageView.cs: Expand on double click fix.
 
 2011-01-12  Andreas Windischer
 
