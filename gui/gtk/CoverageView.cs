@@ -271,11 +271,12 @@ public class CoverageView {
                         SourceWindow sourceView = ShowSourceFor (method.ParentClass);
                         sourceView.CenterOnMethod (method);
 		} else {
-			if (tree.ExpandRow (model.GetPath (iter), true)) {
-				// LAME: This seems to collapse the entire tree...
-				tree.CollapseRow (model.GetPath (iter));
+			TreePath treePath = model.GetPath (iter);
+
+			if (tree.GetRowExpanded (treePath)) {
+				tree.CollapseRow (treePath);
 			} else {
-				tree.ExpandRow (model.GetPath (iter), false);
+				tree.ExpandRow (treePath, false);
 			}
 		}
 	}
