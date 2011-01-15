@@ -16,6 +16,7 @@ public delegate void CoverageProgress (string item, double percent);
 
 public class CoverageModel : CoverageItem {
 
+	private string dataFileName;
 	private Hashtable namespaces;
 	private Hashtable classes;
 	private Hashtable sources;
@@ -32,6 +33,7 @@ public class CoverageModel : CoverageItem {
 
 	public CoverageModel ()
 	{
+		dataFileName = string.Empty;
 		namespaces = new Hashtable ();
 		classes = new Hashtable ();
 		sources = new Hashtable ();
@@ -93,6 +95,12 @@ public class CoverageModel : CoverageItem {
 			string guid = n.Attributes ["guid"].Value;
 			string filename = n.Attributes ["filename"].Value;
 			MonoSymbolFile symbolFile;
+
+			if (!File.Exists (filename)) {
+				string newFilename = Path.Combine(Path.GetDirectoryName (dataFileName), Path.GetFileName (filename));
+				if (File.Exists (newFilename))
+					filename = newFilename;
+			}
 
 #if USE_REFLECTION
 			Assembly assembly = Assembly.Load (assemblyName);
@@ -190,6 +198,7 @@ public class CoverageModel : CoverageItem {
 
 	public void ReadFromFile (string fileName)
 	{
+		dataFileName = fileName;
 		namespaces = new Hashtable ();
 		classes = new Hashtable ();
 
