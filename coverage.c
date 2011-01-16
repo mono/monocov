@@ -100,10 +100,8 @@ mono_profiler_startup (char *arg)
 			exit (1);
 		}
 
-		while (!feof (filterfile)) {
-			char buf [2048];
-
-			fgets (buf, 2048, filterfile);
+		char buf [2048];
+		while (fgets (buf, 2048, filterfile) != NULL) {
 			buf [sizeof (buf) - 1] = '\0';
 
 			if ((buf [0] == '#') || (buf [0] == '\0'))

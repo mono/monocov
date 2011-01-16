@@ -1,3 +1,7 @@
+2011-01-16  Andreas Windischer
+
+	* coverage.c: Check fgets return value.
+
 2011-01-15  Andreas Windischer
 
 	* gui/gtk/CoverageView.cs: Expand on double click fix.
