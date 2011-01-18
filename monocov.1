@@ -6,53 +6,100 @@ monocov \- Mono Coverage Viewer
 [options] [coverage-file]
 .SH OPTIONS
 .TP
-.I \-export-html:DIR
-Export the coverage data as HTML files in directory DIR.
+.I \--export-xml=VALUE
+Export coverage data as XML into specified directory
 .TP
-.I \-export-xml:DIR
-Export the coverage data as XML files in directory DIR.
+.I \--export-html=VALUE
+Export coverage data as HTML into specified directory
 .TP
-.I \-test-class:VALUE
-If a code coverage of a class is less than specified, the application exits with return code 1.
+.I \--stylesheet=VALUE
+Use the specified XSL stylesheet for XML->HTML conversion
 .TP
-.I \-test-methode:VALUE
-If a code coverage of a methode is less than specified, the application exits with return code 1.
+.I \--minClassCoverage=VALUE
+If a code coverage of a class is less than specified, the application exits with return code 1
 .TP
-.I \-version
-Print version information.
+.I \--minMethodeCoverage=VALUE
+If a code coverage of a methode is less than specified, the application exits with return code 1
 .TP
-.I \-no-progress
-Shows no progress messages during the export process
-.TP
-.I \-stylesheet:FILE
-Uses the XSL stylesheet FILE for XML->HTML conversion
-.PP
+.I \--no-progress
+No progress messages during the export process
 .SH DESCRIPTION
-monocov is a tool that allows you to view the information contained in
-coverage data files produced by the Mono coverage profiler. By default
-a graphical user interface is started, otherwise the data can be output
-to XML or HTML files in a specified directory.
-.PP
-The data files can be created by running the program that exercises the code paths
-(for example a test suite runner like nunit) with the --profile=monocov mono option:
-.nf
-	mono --debug --profile=monocov:outfile=data.cov program.exe
-.fi
-Note the use of the --debug option, too. When the program exits, the coverage data
-will be written to the data.cov file.
-If you want to restrict the covergae data to be collected only for some
-specific assemblies, you can especify and additiona option:
-.nf
-	mono --debug --profile=monocov:outfile=data.cov,+[System.Xml] program.exe
-.fi
-to collect data only from the System.Xml assembly.
-.PP
-To start the GUI, simply type:
-.nf
-	monocov data.cov
-.fi
-.PP
+.P
+MonoCov is a line coverage analysis program for mono. It can be used to 
+display coverage data collected while running a .NET program. There are two
+parts in the tool: a profiler module which is used during the execution of
+the program you want to gather coverage data from and a Gtk# user interface.
+.SS Coverage Data Collection
+.P
+To produce coverage info for an .NET program, compile it with the -debug
+switch to generate debug information. After this, run the program as follows:
+.P
+mono --debug --profile=monocov prog.exe
+.P
+This will produce a coverage data file called prog.exe.cov. You can run the
+analyser program as follows:
+.P
+mono monocov.exe prog.exe.cov
+.P
+This will display the class hierarchy of the program with the corresponding
+coverage information.
+.P
+It is also possible to filter the list of classes which need coverage data
+generated. Filters are string which are applied agains the fully qualified 
+names of classes, e.g. [assemblyname]classname. You can specify filters 
+directly on the command line:
+.P
+mono --debug --profile=monocov:-Security,-[System.Xml] prog.exe
+.P
+There are two types of filters: include filters, whose name begins with '+',
+and exclude filters, whose name begins with '-'. Include filters are checked
+before exclude filters.
+.P
+For example:
+.P
+mono --debug --profile=monocov:+[mscorlib],-Hashtable prog.exe
+.P
+This will collect coverage info for all classes in corlib, except the ones
+whose name contains 'Hashtable'.
+.SS Analysis
+.P
+The collected coverage data can be browsed using the monocov program. 
+This program will read the data file produced by the profiler module, and 
+display its contents in a hierarchical fashion.
+.P
+It is also possible to export the contents of a data file into XML, which
+can be viewed in an XSL capable browser like mozilla.
+.P
+To export the data as XML, run monocov like this:
+.P
+monocov --export-xml=<DEST DIR> <DATA FILE NAME>
+.P
+The generated XML files use a default stylesheet which is a bit ugly. It would
+be good if somebody could contribute a better one :)
+.P
+To export the data as HTML, run monocov like this:
+.P
+monocov --export-html=<DEST DIR> <DATA FILE NAME>
+.P
+You can use this application to track your code coverage as part of your build
+process. To specify a minimum methode coverage of 50% and a minimum class coverage
+of 80%:
+.P
+monocov --minMethodeCoverage=0.5 --minClassCoverage=0.8 <DATA FILE NAME>
+.P
+The application will return an exit code which can be used to determine if all
+classes/methodes have a greater code coverage than specified.
+.SH BUGS
+.P
+The --debug option to mono should not be required and it should be enabled
+by default.
+.P
+We disable mono's domain unload since we don't handle that case yet.
+.SH COPYRIGHT
+Copyright (c) 2003, 2004, 2005 The Mono Project
+.br
+License: MIT/X11, see LICENSE file.
 .SH MAILING LISTS
 Visit http://lists.ximian.com/mailman/listinfo/mono-devel-list for details.
 .SH WEB SITE
-Visit http://www.mono-project.com for details
+Visit http://www.mono-project.com/Code_Coverage for details

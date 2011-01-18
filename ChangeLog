@@ -1,3 +1,7 @@
+2011-01-19  Andreas Windischer
+
+	* monocov.1: README -> Man Page synchronized.
+
 2011-01-16  Andreas Windischer
 
 	* coverage.c: Check fgets return value.
