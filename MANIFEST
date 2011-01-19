@@ -13,6 +13,7 @@ SourceFileCoverageData.cs
 XmlExporter.cs
 HtmlExporter.cs
 MonoCovMain.cs
+MonoCovOptions.cs
 style.xsl
 trans.gif
 gui/gtk/MonoCov.cs
@@ -20,9 +21,16 @@ gui/gtk/CoverageView.cs
 gui/gtk/SourceWindow.cs
 gui/gtk/monocov.glade
 gui/gtk/monocov.gladep
+gui/qt/CoverageView.cs
+gui/qt/FilterDialog.cs
+gui/qt/filterdialog.ui
+gui/qt/MonoCov.cs
+gui/qt/SourceWindow.cs
 test.cs
 symbols.cs
 nunit-console.cs
 coverage.c
 monocov.1
 Mono.Cecil.dll
+Options.cs
+

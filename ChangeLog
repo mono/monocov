@@ -1,6 +1,7 @@
 2011-01-19  Andreas Windischer
 
 	* monocov.1: README -> Man Page synchronized.
+	* MANIFEST: MonoCovOptions.cs, gui/qt/* added.
 
 2011-01-16  Andreas Windischer
 
