@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <glib.h>
 
 #include <mono/metadata/class.h>
 #include <mono/metadata/assembly.h>
