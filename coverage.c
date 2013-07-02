@@ -32,6 +32,61 @@ struct _MonoProfiler {
 	FILE *outfile;
 };
 
+/* Pointer hack: this should be accessible from the mono embedding api */
+
+typedef struct _MonoMethodHack {
+	guint16 flags;  /* method flags */
+	guint16 iflags; /* method implementation flags */
+	guint32 token;
+	void *klass;
+	void *signature;
+	/* name is useful mostly for debugging */
+	const char *name;
+	/* this is used by the inlining algorithm */
+	unsigned int inline_info:1;
+	unsigned int inline_failure:1;
+	unsigned int wrapper_type:5;
+	unsigned int string_ctor:1;
+	unsigned int save_lmf:1;
+	unsigned int dynamic:1; /* created & destroyed during runtime */
+	unsigned int sre_method:1; /* created at runtime using Reflection.Emit */
+	unsigned int is_generic:1; /* whenever this is a generic method definition */
+	unsigned int is_inflated:1; /* whether we're a MonoMethodInflated */
+	unsigned int skip_visibility:1; /* whenever to skip JIT visibility checks */
+	unsigned int verification_success:1; /* whether this method has been verified successfully.*/
+	/* TODO we MUST get rid of this field, it's an ugly hack nobody is proud of. */
+	unsigned int is_mb_open : 1;		/* This is the fully open instantiation of a generic method_builder. Worse than is_tb_open, but it's temporary */
+	signed int slot : 16;
+
+	/*
+	 * If is_generic is TRUE, the generic_container is stored in image->property_hash, 
+	 * using the key MONO_METHOD_PROP_GENERIC_CONTAINER.
+	 */
+} MonoMethodHack;
+
+typedef struct _MonoMethodPInvoke {
+	MonoMethodHack method;
+	gpointer addr;
+	/* add marshal info */
+	guint16 piflags;  /* pinvoke flags */
+	guint16 implmap_idx;  /* index into IMPLMAP */
+} MonoMethodPInvokeHack;
+
+typedef struct _MonoMethodInflated MonoMethodInflated;
+
+struct _MonoMethodInflated {
+	union {
+		MonoMethodHack method;
+		MonoMethodPInvokeHack pinvoke;
+	} method;
+	 
+	MonoMethodHeader *header;
+	MonoMethod *declaring;		/* the generic method definition. */
+};
+
+/* End Pointer hack: this should be accessible from the mono embedding api */
+
+
 static char
 *parse_generic_type_names(char *string);
 
@@ -324,23 +379,36 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 	MonoClass *klass;
 	MonoImage *image;
 
-	outfile = prof->outfile;
-	header = mono_method_get_header (method);
+	MonoMethod *covered_method;
 
-	tmpsig = mono_signature_get_desc (mono_method_signature (method), TRUE);
+    if(((MonoMethodHack *) method)->is_inflated)
+    {
+        MonoMethodInflated *imethod = (MonoMethodInflated *) method;
+        covered_method = imethod->declaring;
+    }
+    else
+    {
+        covered_method = method;
+    }
+
+	
+	outfile = prof->outfile;
+	header = mono_method_get_header (covered_method);
+
+	tmpsig = mono_signature_get_desc (mono_method_signature (covered_method), TRUE);
 	tmpsig = g_markup_escape_text (tmpsig, strlen (tmpsig));
 
-	klass = mono_method_get_class (method);
+	klass = mono_method_get_class (covered_method);
 	classname = parse_generic_type_names (mono_type_get_name (mono_class_get_type (klass)));
 	image = mono_class_get_image (klass);
 
-	tmpname = (char*)mono_method_get_name (method);
+	tmpname = (char*)mono_method_get_name (covered_method);
 	tmpname = g_markup_escape_text (tmpname, strlen (tmpname));
 
 	fprintf (outfile, "\t<method assembly=\"%s\" class=\"%s\" name=\"%s (%s)\" token=\"%d\">\n",
 			 mono_image_get_name (image),
 			 classname, tmpname,
-			 tmpsig, mono_method_get_token (method));
+			 tmpsig, mono_method_get_token (covered_method));
 
 	g_free (tmpsig);
 	g_free (tmpname);
