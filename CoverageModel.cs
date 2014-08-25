@@ -234,6 +234,9 @@ public class CoverageModel : CoverageItem {
 			string className = n.Attributes ["class"].Value;
 			string methodName = n.Attributes ["name"].Value;
 			string token = n.Attributes ["token"].Value;
+			if (n.FirstChild == null) {
+				continue;
+			}
 			string cov_info = n.FirstChild.Value;
 			int itok = int.Parse (token);
 			
