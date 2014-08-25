@@ -39,7 +39,7 @@ SRCS = \
 	$(GUI_SRCS)
 
 monocov.exe: $(SRCS) style.xsl .gui-$(GUI) $(GUI_DEPS)
-	gmcs -debug /target:exe /out:$@ -define:GUI_$(GUI) $(LIBS) -r:Mono.CompilerServices.SymbolWriter $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
+	mcs -debug /target:exe /out:$@ -define:GUI_$(GUI) $(LIBS) -r:Mono.CompilerServices.SymbolWriter $(GUI_LIBS) $(SRCS) -resource:style.xsl,style.xsl -resource:trans.gif,trans.gif
 
 .gui-gtk:
 	@rm -f .gui-*
@@ -50,10 +50,10 @@ monocov.exe: $(SRCS) style.xsl .gui-$(GUI) $(GUI_DEPS)
 	@touch .gui-qt
 
 symbols.exe: symbols.cs
-	gmcs -debug /target:exe /out:$@ -r:Mono.CompilerServices.SymbolWriter symbols.cs
+	mcs -debug /target:exe /out:$@ -r:Mono.CompilerServices.SymbolWriter symbols.cs
 
 nunit-console.exe: nunit-console.cs
-	gmcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
+	mcs -r:nunit.framework -r:nunit.core -r:nunit.util -r:Mono.GetOptions nunit-console.cs
 
 libmono-profiler-monocov.so: coverage.c
 	$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" `pkg-config --cflags mono-2` `pkg-config --libs mono-2` `pkg-config --cflags glib-2.0` `pkg-config --libs glib-2.0` --shared -fPIC -o $@ $^
@@ -68,7 +68,7 @@ install: all
 	cp monocov.1 $(prefix)/man/man1
 
 test:
-	gmcs -debug test.cs
+	mcs -debug test.cs
 	mono --profile=monocov:outfile=res.cov test.exe
 
 cortests:
@@ -89,7 +89,7 @@ hash-test:
 	mono --profile=monocov:+Hashtable hash-table.exe
 
 test-colorizer.exe: test-colorizer.cs SyntaxHighlighter.cs
-	gmcs -debug /out:$@ $^
+	mcs -debug /out:$@ $^
 
 clean:
 	rm -f monocov.exe monocov.exe.mdb symbols.exe symbols.exe.mdb nunit-console.exe libmono-profiler-monocov.so
