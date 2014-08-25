@@ -47,6 +47,15 @@ coverage_shutdown (MonoProfiler *prof);
 static gboolean
 collect_coverage_for (MonoProfiler *prof, MonoMethod *method);
 
+static MonoProfiler *curprof = NULL;
+
+static void mono_profiler_ensure_cleanup()
+{
+	if (curprof != NULL) {
+		coverage_shutdown(curprof);
+	}
+}
+
 void
 mono_profiler_startup (char *arg)
 {
@@ -117,17 +126,94 @@ mono_profiler_startup (char *arg)
 	}
 
 	mono_profiler_install (prof, coverage_shutdown);
-	mono_profiler_set_events (MONO_PROFILE_INS_COVERAGE | MONO_PROFILE_ASSEMBLY_EVENTS);
+	mono_profiler_set_events (MONO_PROFILE_INS_COVERAGE | MONO_PROFILE_COVERAGE | MONO_PROFILE_ASSEMBLY_EVENTS);
 	mono_profiler_install_coverage_filter (collect_coverage_for);
 	mono_profiler_install_assembly (NULL, assembly_load, NULL, NULL);
 	/* we don't deal with unloading, so disable it for now */
 	setenv ("MONO_NO_UNLOAD", "1", 1);
+
+	// Currently, mono doesn't seem to call the shutdown callback.
+	// We have to do cleanup manually...
+	curprof = prof;
+	atexit(mono_profiler_ensure_cleanup);
+
+	puts("monocov | starting coverage profiling.");
 }
+
+
 
 static void
 assembly_load (MonoProfiler *prof, MonoAssembly *assembly, int result)
 {
 	/* Unfortunately, this doesn't get called... */
+}
+
+static gboolean check_filter(MonoProfiler *prof, MonoMethod *method)
+{
+	if (!prof->filters) {
+		return TRUE;
+	}
+	int i;
+	char *classname;
+	char *fqn;
+	MonoMethodHeader *header;
+	gboolean has_positive, found;
+	guint32 iflags, flags, code_size;
+	MonoClass *klass;
+	MonoImage *image;
+
+	flags = mono_method_get_flags (method, &iflags);
+	if ((iflags & 0x1000 /*METHOD_IMPL_ATTRIBUTE_INTERNAL_CALL*/) ||
+	    (flags & 0x2000 /*METHOD_ATTRIBUTE_PINVOKE_IMPL*/))
+		return FALSE;
+
+	//if (method->wrapper_type != MONO_WRAPPER_NONE)
+	//	return FALSE;
+
+	klass = mono_method_get_class (method);
+	image = mono_class_get_image (klass);
+
+	/* Check already filtered classes first */
+	if (g_hash_table_lookup (prof->filtered_classes, klass))
+		return FALSE;
+
+	classname = mono_type_get_name (mono_class_get_type (klass));
+
+	fqn = g_strdup_printf ("[%s]%s", mono_image_get_name (image), classname);
+
+	// Check positive filters first
+	has_positive = FALSE;
+	found = FALSE;
+	for (i = 0; i < prof->filters->len; ++i) {
+		char *filter = g_ptr_array_index (prof->filters_as_str, i);
+		if (filter [0] == '+') {
+			filter = &filter [1];
+			if (strstr (fqn, filter) != NULL)
+				found = TRUE;
+			has_positive = TRUE;
+		}
+	}
+	if (has_positive && !found)
+		return FALSE;
+
+	for (i = 0; i < prof->filters->len; ++i) {
+		// Is substring search suffices ???
+//			GPatternSpec *spec = g_ptr_array_index (filters, i);
+//			if (g_pattern_match_string (spec, classname)) {
+		char *filter = g_ptr_array_index (prof->filters_as_str, i);
+		if (filter [0] == '+')
+			continue;
+
+		// Skip '-'
+		filter = &filter [1];
+		if (strstr (fqn, filter) != NULL) {
+			g_hash_table_insert (prof->filtered_classes, klass, klass);
+			return FALSE;
+		}
+	}
+	g_free (fqn);
+	g_free (classname);
+	return TRUE;
 }
 
 static gboolean
@@ -158,64 +244,25 @@ collect_coverage_for (MonoProfiler *prof, MonoMethod *method)
 	}
 
 	/* Check filters */
-	if (prof->filters) {
-		/* Check already filtered classes first */
-		if (g_hash_table_lookup (prof->filtered_classes, klass))
-			return FALSE;
-
-		classname = mono_type_get_name (mono_class_get_type (klass));
-
-		fqn = g_strdup_printf ("[%s]%s", mono_image_get_name (image), classname);
-
-		// Check positive filters first
-		has_positive = FALSE;
-		found = FALSE;
-		for (i = 0; i < prof->filters->len; ++i) {
-			char *filter = g_ptr_array_index (prof->filters_as_str, i);
-			if (filter [0] == '+') {
-				filter = &filter [1];
-				if (strstr (fqn, filter) != NULL)
-					found = TRUE;
-				has_positive = TRUE;
-			}
-		}
-		if (has_positive && !found)
-			return FALSE;
-
-		for (i = 0; i < prof->filters->len; ++i) {
-			// Is substring search suffices ???
-//			GPatternSpec *spec = g_ptr_array_index (filters, i);
-//			if (g_pattern_match_string (spec, classname)) {
-			char *filter = g_ptr_array_index (prof->filters_as_str, i);
-			if (filter [0] == '+')
-				continue;
-
-			// Skip '-'
-			filter = &filter [1];
-			if (strstr (fqn, filter) != NULL) {
-				g_hash_table_insert (prof->filtered_classes, klass, klass);
-				return FALSE;
-			}
-		}
-		g_free (fqn);
-		g_free (classname);
-	}
+	gboolean passed = check_filter(prof, method);
 
 	header = mono_method_get_header (method);
 
 	mono_method_header_get_code (header, &code_size, NULL);
 	if (code_size > 20000) {
-		exit (1);
-		g_warning ("Unable to instrument method %s:%s since it is too complex.", mono_class_get_name (klass), mono_method_get_name (method));
-		return FALSE;
+		// exit (1);
+		// g_warning ("Unable to instrument method %s:%s since it is too complex.", mono_class_get_name (klass), mono_method_get_name (method));
+		// return FALSE;
 	}
 
-	g_hash_table_insert (prof->methods, method, method);
+	if (passed) {
+		g_hash_table_insert (prof->methods, method, method);
 
-	g_hash_table_insert (prof->classes, klass, klass);
+		g_hash_table_insert (prof->classes, klass, klass);
 
-	g_hash_table_insert (prof->assemblies, mono_image_get_assembly (image), mono_image_get_assembly (image));
-
+		g_hash_table_insert (prof->assemblies, mono_image_get_assembly (image), mono_image_get_assembly (image));
+	}
+	
 	return TRUE;
 }
 
@@ -357,10 +404,13 @@ output_method (MonoMethod *method, gpointer dummy, MonoProfiler *prof)
 static void
 coverage_shutdown (MonoProfiler *prof)
 {
+	curprof = NULL;
+	puts("monocov | coverage profiling done.");
+
 	FILE *outfile;
 
 	if (!prof->outfile_name)
-		prof->outfile_name = g_strdup ("/dev/stdout");
+		prof->outfile_name = g_strdup ("/dev/stderr");
 
 	printf ("Dumping coverage data to %s ...\n", prof->outfile_name);
 
